@@ -1,0 +1,70 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>DVD Bounce Effect</title>
+    <style>
+        body {
+            margin: 0;
+            background-color: black;
+            overflow: hidden;
+        }
+
+        #dvd-logo {
+            position: absolute;
+            width: 150px;
+            height: 75px;
+            background: url('DVD.png') no-repeat center;
+            background-size: contain;
+        }
+        header {
+                color: white;
+                text-align: center;
+                font-size: 50px;
+        }
+    </style>
+</head>
+<body>
+    <header>CI/CD Test Website</header>
+    <div id="dvd-logo"></div>
+
+    <script>
+        const dvdLogo = document.getElementById('dvd-logo');
+        let posX = 100, posY = 100;
+        let velocityX = 2, velocityY = 2;
+
+        function moveLogo() {
+            const screenWidth = window.innerWidth;
+            const screenHeight = window.innerHeight;
+            const logoWidth = dvdLogo.offsetWidth;
+            const logoHeight = dvdLogo.offsetHeight;
+
+            posX += velocityX;
+            posY += velocityY;
+
+            if (posX + logoWidth >= screenWidth || posX <= 0) {
+                velocityX = -velocityX;
+                changeColor();
+            }
+
+            if (posY + logoHeight >= screenHeight || posY <= 0) {
+                velocityY = -velocityY;
+                changeColor();
+            }
+
+            dvdLogo.style.left = posX + 'px';
+            dvdLogo.style.top = posY + 'px';
+
+            requestAnimationFrame(moveLogo);
+        }
+
+        function changeColor() {
+            const randomColor = '#' + Math.floor(Math.random()*16777215).toString(16);
+            dvdLogo.style.filter = `drop-shadow(0 0 10px ${randomColor})`;
+        }
+
+        moveLogo();
+    </script>
+</body>
+</html>
