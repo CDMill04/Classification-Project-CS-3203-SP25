@@ -21,8 +21,9 @@ jobs:
     timeout-minutes: 10
     strategy:
       fail-fast: false
-        language:
-          - javascript-typescript
+      matrix:
+        include:
+        - language: javascript-typescript
           build-mode: none
 
     steps:
