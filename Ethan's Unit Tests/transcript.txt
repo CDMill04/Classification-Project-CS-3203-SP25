@@ -1,0 +1,6 @@
+Student Name: John Doe
+Grade: 12
+
+CS 3203: Software Engineering
+CS 2113: Programming Abstractions and Principles
+CS 4013: Artificial Intelligence
