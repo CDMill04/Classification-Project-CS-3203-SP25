@@ -35,7 +35,7 @@ class TestTranscripts(unittest.TestCase):
 
 
     # Tests that fail.txt fails because it is formatted incorrectly.
-    def test_bad_txt_file(self):
+    def test_incorrect_format(self):
 
         # Upload the file.
         uploaded_file = self.handler.upload_transcript(self.bad_txt)
@@ -46,7 +46,7 @@ class TestTranscripts(unittest.TestCase):
             self.handler.read_transcript()
 
     # Tests that fail.pdf fails because it is the incorrect file type.
-    def test_bad_pdf_file_type(self):
+    def test_incorrect_filetype(self):
 
         # Asserts that the file upload failed.
         with self.assertRaises(ValueError):
