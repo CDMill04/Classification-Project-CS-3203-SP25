@@ -8,6 +8,6 @@
 * Course creation and management (Kyle)
 * Assignment creation and management (Brayden)
 * Course creation (Ethan)
-* File sharing and handling (Ethan and Brayden)
+* File sharing and handling (Ethan and Alex and Brayden)
 * Website UX design (Ethan)
 
