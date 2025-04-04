@@ -1,0 +1,80 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Contact - Mixed Pages Demo</title>
+  <link href="https://cdn.jsdelivr.net/npm/tailwindcss@2.2.19/dist/tailwind.min.css" rel="stylesheet">
+</head>
+<body class="bg-gray-100">
+  <nav class="bg-gray-800 text-white">
+    <div class="container mx-auto px-4">
+      <div class="flex items-center justify-between h-16">
+        <div class="flex items-center">
+          <a href="/" class="text-xl font-bold">
+            Mixed Pages Demo
+          </a>
+        </div>
+        <div class="flex space-x-4">
+          <a href="/" class="px-3 py-2 rounded-md hover:bg-gray-700">
+            Home
+          </a>
+          <a href="/about" class="px-3 py-2 rounded-md hover:bg-gray-700">
+            About
+          </a>
+          <a href="/services.html" class="px-3 py-2 rounded-md hover:bg-gray-700">
+            Services
+          </a>
+          <a href="/contact.html" class="px-3 py-2 rounded-md hover:bg-gray-700 bg-gray-700">
+            Contact
+          </a>
+        </div>
+      </div>
+    </div>
+  </nav>
+
+  <main class="container mx-auto px-4 py-8">
+    <div class="space-y-6">
+      <h1 class="text-3xl font-bold">Contact Us</h1>
+      <p class="text-lg">
+        This is the contact page built as a static HTML file. It demonstrates a simple contact form.
+      </p>
+      
+      <div class="mt-8 max-w-md mx-auto">
+        <form class="bg-white shadow-md rounded px-8 pt-6 pb-8 mb-4">
+          <div class="mb-4">
+            <label class="block text-gray-700 text-sm font-bold mb-2" for="name">
+              Name
+            </label>
+            <input class="shadow appearance-none border rounded w-full py-2 px-3 text-gray-700 leading-tight focus:outline-none focus:shadow-outline" id="name" type="text" placeholder="Your Name">
+          </div>
+          <div class="mb-4">
+            <label class="block text-gray-700 text-sm font-bold mb-2" for="email">
+              Email
+            </label>
+            <input class="shadow appearance-none border rounded w-full py-2 px-3 text-gray-700 leading-tight focus:outline-none focus:shadow-outline" id="email" type="email" placeholder="your.email@example.com">
+          </div>
+          <div class="mb-6">
+            <label class="block text-gray-700 text-sm font-bold mb-2" for="message">
+              Message
+            </label>
+            <textarea class="shadow appearance-none border rounded w-full py-2 px-3 text-gray-700 leading-tight focus:outline-none focus:shadow-outline" id="message" rows="4" placeholder="Your message here..."></textarea>
+          </div>
+          <div class="flex items-center justify-between">
+            <button class="bg-blue-500 hover:bg-blue-700 text-white font-bold py-2 px-4 rounded focus:outline-none focus:shadow-outline" type="button">
+              Send Message
+            </button>
+          </div>
+        </form>
+      </div>
+    </div>
+  </main>
+
+  <footer class="bg-gray-800 text-white py-6 mt-12">
+    <div class="container mx-auto px-4">
+      <p class="text-center">© 2025 Mixed Pages Demo. All rights reserved.</p>
+    </div>
+  </footer>
+</body>
+</html>
+

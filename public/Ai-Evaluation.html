@@ -1,0 +1,179 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <link rel="stylesheet" type="text/css" href="Classification.css" />
+    <title>AI Evaluation - Classification</title>
+</head>
+<body>
+    <header>
+        <h1>Classification</h1>
+        <h2></h2>
+    </header>
+    <nav>
+        <a href="/">Home</a>
+        <a href="/profile">Profile</a>
+        <a href="/dashboard">Dashboard</a>
+        <a href="/courses">Courses</a>
+        <a href="/Ai-Evaluation.html">AI Evaluation</a>
+        <a href="/Support.html">Support</a>
+        <a href="/file-upload">File-Upload</a>
+    </nav>
+    <div class="container">
+        <h2>AI Evaluation System</h2>
+        <p>Our advanced AI system provides automated evaluations for assignments, essays, and projects.</p>
+        
+        <div class="ai-section">
+            <h3>Submit Work for Evaluation</h3>
+            <form>
+                <div class="form-group">
+                    <label>Course:</label>
+                    <select>
+                        <option>Select a course</option>
+                        <option>Introduction to Computer Science</option>
+                        <option>Advanced Mathematics</option>
+                        <option>English Literature</option>
+                    </select>
+                </div>
+                <div class="form-group">
+                    <label>Assignment:</label>
+                    <select>
+                        <option>Select an assignment</option>
+                        <option>Midterm Project</option>
+                        <option>Essay #2</option>
+                        <option>Final Presentation</option>
+                    </select>
+                </div>
+                <div class="form-group">
+                    <label>Upload File:</label>
+                    <input type="file" />
+                </div>
+                <div class="form-group">
+                    <label>Additional Comments:</label>
+                    <textarea rows="4" placeholder="Any additional information about your submission..."></textarea>
+                </div>
+                <button type="submit">Submit for Evaluation</button>
+            </form>
+        </div>
+        
+        <div class="ai-section">
+            <h3>Previous Evaluations</h3>
+            <table class="evaluation-table">
+                <thead>
+                    <tr>
+                        <th>Date</th>
+                        <th>Course</th>
+                        <th>Assignment</th>
+                        <th>Score</th>
+                        <th>Actions</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    <tr>
+                        <td>Apr 1, 2025</td>
+                        <td>Computer Science</td>
+                        <td>Algorithm Analysis</td>
+                        <td>92%</td>
+                        <td><a href="#">View Details</a></td>
+                    </tr>
+                    <tr>
+                        <td>Mar 15, 2025</td>
+                        <td>English Literature</td>
+                        <td>Critical Essay</td>
+                        <td>88%</td>
+                        <td><a href="#">View Details</a></td>
+                    </tr>
+                    <tr>
+                        <td>Feb 28, 2025</td>
+                        <td>Mathematics</td>
+                        <td>Statistical Analysis</td>
+                        <td>95%</td>
+                        <td><a href="#">View Details</a></td>
+                    </tr>
+                </tbody>
+            </table>
+        </div>
+    </div>
+    <footer></footer>
+
+    <style>
+        .ai-section {
+            background-color: #f8f9fa;
+            border-radius: 8px;
+            padding: 1.5rem;
+            margin-bottom: 1.5rem;
+            box-shadow: 0 2px 5px rgba(0, 0, 0, 0.05);
+        }
+        
+        textarea {
+            width: 100%;
+            padding: 0.5rem;
+            border: 1px solid #ddd;
+            border-radius: 4px;
+            font-size: 1rem;
+            font-family: inherit;
+        }
+        
+        .evaluation-table {
+            width: 100%;
+            border-collapse: collapse;
+            margin-top: 1rem;
+        }
+        
+        .evaluation-table th, .evaluation-table td {
+            padding: 0.75rem;
+            text-align: left;
+            border-bottom: 1px solid #ddd;
+        }
+        
+        .evaluation-table th {
+            background-color: #f1f1f1;
+            font-weight: bold;
+        }
+        
+        .evaluation-table tr:hover {
+            background-color: #f5f5f5;
+        }
+        
+        .evaluation-table a {
+            color: #3498db;
+            text-decoration: underline;
+        }
+        
+        .form-group {
+            margin-bottom: 1rem;
+        }
+        
+        label {
+            display: block;
+            margin-bottom: 0.5rem;
+            font-weight: bold;
+        }
+        
+        input, select {
+            width: 100%;
+            padding: 0.5rem;
+            border: 1px solid #ddd;
+            border-radius: 4px;
+            font-size: 1rem;
+        }
+        
+        button {
+            background-color: #3498db;
+            color: white;
+            border: none;
+            padding: 0.5rem 1rem;
+            border-radius: 4px;
+            cursor: pointer;
+            font-size: 1rem;
+            transition: background-color 0.3s;
+        }
+        
+        button:hover {
+            background-color: #2980b9;
+        }
+    </style>
+</body>
+</html>
+

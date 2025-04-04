@@ -1,0 +1,116 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <link rel="stylesheet" type="text/css" href="Classification.css" />
+    <title>Classification</title>
+</head>
+<body>
+    <header>
+        <h1>Classification</h1>
+        <h2></h2>
+    </header>
+    <nav>
+        <a href="/">Home</a>
+        <a href="/profile">Profile</a>
+        <a href="/dashboard">Dashboard</a>
+        <a href="/courses">Courses</a>
+        <a href="/Ai-Evaluation.html">AI Evaluation</a>
+        <a href="/Support.html">Support</a>
+        <a href="/file-upload">File-Upload</a>
+        <a href="/test">Test</a>
+    </nav>
+    <div class="container">
+        <h2>Welcome to Classification LMS</h2>
+        <p>A streamlined learning management system designed for students, educators, and administrators.</p>
+        <ul>
+            <li>Curriculum uploads and reviews</li>
+            <li>Performance comparison with state/national standards</li>
+            <li>AI evaluations for students and educators</li>
+            <li>Chatbot assistance</li>
+        </ul>
+        
+        <div class="features-grid">
+            <div class="feature-card">
+                <h3>For Students</h3>
+                <ul>
+                    <li>Track your progress across all courses</li>
+                    <li>Submit assignments for AI-powered feedback</li>
+                    <li>Access course materials anytime, anywhere</li>
+                    <li>Collaborate with peers on group projects</li>
+                </ul>
+                <a href="/courses" class="feature-link">Browse Courses</a>
+            </div>
+            
+            <div class="feature-card">
+                <h3>For Educators</h3>
+                <ul>
+                    <li>Create and manage course content easily</li>
+                    <li>Automated grading and feedback systems</li>
+                    <li>Track student performance with detailed analytics</li>
+                    <li>Customize learning paths for different student needs</li>
+                </ul>
+                <a href="/dashboard" class="feature-link">Educator Dashboard</a>
+            </div>
+            
+            <div class="feature-card">
+                <h3>For Administrators</h3>
+                <ul>
+                    <li>Comprehensive reporting and analytics</li>
+                    <li>Manage user accounts and permissions</li>
+                    <li>Monitor system performance and usage</li>
+                    <li>Integration with existing school systems</li>
+                </ul>
+                <a href="/dashboard" class="feature-link">Admin Console</a>
+            </div>
+        </div>
+    </div>
+    <footer></footer>
+
+    <style>
+        .features-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(300px, 1fr));
+            gap: 1.5rem;
+            margin-top: 2rem;
+        }
+        
+        .feature-card {
+            background-color: #f8f9fa;
+            border-radius: 8px;
+            padding: 1.5rem;
+            box-shadow: 0 2px 5px rgba(0, 0, 0, 0.05);
+        }
+        
+        .feature-card h3 {
+            color: #2c3e50;
+            margin-top: 0;
+            border-bottom: 1px solid #e9ecef;
+            padding-bottom: 0.5rem;
+        }
+        
+        .feature-link {
+            display: inline-block;
+            margin-top: 1rem;
+            padding: 0.5rem 1rem;
+            background-color: #3498db;
+            color: white;
+            text-decoration: none;
+            border-radius: 4px;
+            transition: background-color 0.3s;
+        }
+        
+        .feature-link:hover {
+            background-color: #2980b9;
+        }
+        
+        @media (max-width: 768px) {
+            .features-grid {
+                grid-template-columns: 1fr;
+            }
+        }
+    </style>
+</body>
+</html>
+

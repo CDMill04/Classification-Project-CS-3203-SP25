@@ -1,0 +1,184 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <link rel="stylesheet" type="text/css" href="Classification.css" />
+    <title>Support - Classification</title>
+</head>
+<body>
+    <header>
+        <h1>Classification</h1>
+        <h2></h2>
+    </header>
+    <nav>
+        <a href="/">Home</a>
+        <a href="/profile">Profile</a>
+        <a href="/dashboard">Dashboard</a>
+        <a href="/courses">Courses</a>
+        <a href="/Ai-Evaluation.html">AI Evaluation</a>
+        <a href="/Support.html">Support</a>
+        <a href="/file-upload">File-Upload</a>
+    </nav>
+    <div class="container">
+        <h2>Support Center</h2>
+        <p>Get help with any issues or questions you have about the Classification LMS.</p>
+        
+        <div class="support-grid">
+            <div class="support-card">
+                <h3>Frequently Asked Questions</h3>
+                <div class="faq-item">
+                    <h4>How do I reset my password?</h4>
+                    <p>Go to the login page and click on "Forgot Password". Follow the instructions sent to your email.</p>
+                </div>
+                <div class="faq-item">
+                    <h4>How do I enroll in a course?</h4>
+                    <p>Browse the courses page, select a course, and click the "Enroll Now" button.</p>
+                </div>
+                <div class="faq-item">
+                    <h4>How are AI evaluations scored?</h4>
+                    <p>Our AI system analyzes your work based on rubrics, comparing against standards and previous submissions.</p>
+                </div>
+                <div class="faq-item">
+                    <h4>Can I download my course materials?</h4>
+                    <p>Yes, most course materials have a download option available on the course page.</p>
+                </div>
+            </div>
+            
+            <div class="support-card">
+                <h3>Contact Support</h3>
+                <form>
+                    <div class="form-group">
+                        <label>Name:</label>
+                        <input type="text" placeholder="Your name" />
+                    </div>
+                    <div class="form-group">
+                        <label>Email:</label>
+                        <input type="email" placeholder="Your email" />
+                    </div>
+                    <div class="form-group">
+                        <label>Subject:</label>
+                        <select>
+                            <option>Select a subject</option>
+                            <option>Technical Issue</option>
+                            <option>Billing Question</option>
+                            <option>Course Content</option>
+                            <option>Other</option>
+                        </select>
+                    </div>
+                    <div class="form-group">
+                        <label>Message:</label>
+                        <textarea rows="5" placeholder="Describe your issue or question..."></textarea>
+                    </div>
+                    <button type="submit">Submit Ticket</button>
+                </form>
+            </div>
+        </div>
+        
+        <div class="support-section">
+            <h3>Live Chat Support</h3>
+            <p>Our support team is available for live chat during business hours (9am-5pm EST, Monday-Friday).</p>
+            <button id="startChatBtn">Start Chat</button>
+        </div>
+    </div>
+    <footer></footer>
+
+    <style>
+        .support-grid {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 1.5rem;
+            margin-bottom: 1.5rem;
+        }
+        
+        .support-card {
+            background-color: #f8f9fa;
+            border-radius: 8px;
+            padding: 1.5rem;
+            box-shadow: 0 2px 5px rgba(0, 0, 0, 0.05);
+        }
+        
+        .faq-item {
+            margin-bottom: 1rem;
+            border-bottom: 1px solid #e9ecef;
+            padding-bottom: 1rem;
+        }
+        
+        .faq-item:last-child {
+            border-bottom: none;
+            margin-bottom: 0;
+            padding-bottom: 0;
+        }
+        
+        .faq-item h4 {
+            margin: 0 0 0.5rem 0;
+            color: #2c3e50;
+        }
+        
+        .faq-item p {
+            margin: 0;
+        }
+        
+        .support-section {
+            background-color: #f8f9fa;
+            border-radius: 8px;
+            padding: 1.5rem;
+            box-shadow: 0 2px 5px rgba(0, 0, 0, 0.05);
+            text-align: center;
+        }
+        
+        #startChatBtn {
+            margin-top: 1rem;
+        }
+        
+        textarea {
+            width: 100%;
+            padding: 0.5rem;
+            border: 1px solid #ddd;
+            border-radius: 4px;
+            font-size: 1rem;
+            font-family: inherit;
+        }
+        
+        @media (max-width: 768px) {
+            .support-grid {
+                grid-template-columns: 1fr;
+            }
+        }
+        
+        .form-group {
+            margin-bottom: 1rem;
+        }
+        
+        label {
+            display: block;
+            margin-bottom: 0.5rem;
+            font-weight: bold;
+        }
+        
+        input, select {
+            width: 100%;
+            padding: 0.5rem;
+            border: 1px solid #ddd;
+            border-radius: 4px;
+            font-size: 1rem;
+        }
+        
+        button {
+            background-color: #3498db;
+            color: white;
+            border: none;
+            padding: 0.5rem 1rem;
+            border-radius: 4px;
+            cursor: pointer;
+            font-size: 1rem;
+            transition: background-color 0.3s;
+        }
+        
+        button:hover {
+            background-color: #2980b9;
+        }
+    </style>
+</body>
+</html>
+
