@@ -6,6 +6,7 @@ import { useState, useEffect } from "react"
 import { uploadToBlob, fetchUserUploads, updateUserUploads } from "./actions"
 
 export default function FileUpload() {
+  console.log("FileUpload component rendered"); // Debugging
   const [files, setFiles] = useState<File[]>([])
   const [uploading, setUploading] = useState(false)
   const [uploadedFiles, setUploadedFiles] = useState<
@@ -17,14 +18,20 @@ export default function FileUpload() {
 
   // Fetch the user's uploads when the component mounts
   useEffect(() => {
+    console.log("useEffect triggered"); // Debugging
+
     const fetchUploads = async () => {
-      const uploads = await fetchUserUploads(USER_EMAIL) // Fetch the data
-      console.log("Fetched uploads 2:", uploads) // Debugging
-      setUploadedFiles(uploads) // Update the state
+      try {
+        const uploads = await fetchUserUploads(USER_EMAIL)
+        console.log("Fetched uploads:", uploads) // Debugging
+        setUploadedFiles(uploads)
+      } catch (error) {
+        console.error("Error in fetchUploads:", error) // Debugging
+      }
     }
 
     fetchUploads()
-  }, [])
+  }, []) // Dependency array is empty
 
   const handleFileChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     if (e.target.files) {
@@ -71,7 +78,7 @@ export default function FileUpload() {
           status: "Pending",
         }
 
-        await updateUserUploads("USER_EMAIL", newUpload) // Replace with actual user email
+        await updateUserUploads(USER_EMAIL, newUpload) // Replace with actual user email
 
         return newUpload
       })
@@ -134,7 +141,15 @@ export default function FileUpload() {
             {uploadedFiles.map((file, index) => (
               <tr key={index}>
                 <td>{file.date}</td>
-                <td>{file.filename}</td>
+                <td>
+                  <a
+                    href={`http://192.168.1.247:3000/local-uploads/${file.filename}`}
+                    target="_blank"
+                    rel="noopener noreferrer"
+                  >
+                    {file.filename}
+                  </a>
+                </td>
                 <td>{file.semester}</td>
                 <td>{file.status}</td>
               </tr>
@@ -149,6 +164,15 @@ export default function FileUpload() {
           padding: 1.5rem;
           margin-bottom: 1.5rem;
           box-shadow: 0 2px 5px rgba(0, 0, 0, 0.05);
+        }
+        
+        .uploads-table a {
+          color: #007bff; /* Blue color for the link */
+          text-decoration: none; /* Remove underline */
+        }
+
+        .uploads-table a:hover {
+          text-decoration: underline; /* Add underline on hover */
         }
         
         .file-hint {

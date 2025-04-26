@@ -1,8 +1,14 @@
 [
-    {
-        "Date": "2023-10-01",
-        "Filename": "test-lesson-plan.pdf",
-        "Semester": "Spring",
-        "Status": "Pending"
-    }
+  {
+    "date": "2023-10-01",
+    "filename": "test-lesson-plan.pdf",
+    "semester": "Spring",
+    "status": "Pending"
+  },
+  {
+    "date": "2025-04-26",
+    "filename": "113487067_Assignment1_CS3203Spring2025.pdf",
+    "semester": "Spring",
+    "status": "Pending"
+  }
 ]

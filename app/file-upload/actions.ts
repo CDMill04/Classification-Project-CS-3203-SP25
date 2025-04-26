@@ -97,17 +97,18 @@ export async function uploadToBlob(formData: FormData) {
       throw new Error("No file provided")
     }
 
-    // Generate a unique filename to avoid collisions
-    const uniqueFilename = `${Date.now()}-${file.name}`
-    const filePath = path.join(LOCAL_STORAGE_DIR, uniqueFilename)
+    // Use the original filename
+    const filePath = path.join(LOCAL_STORAGE_DIR, file.name);
 
     // Write the file to the local storage directory
     await ensureLocalStorageDir()
     await fs.writeFile(filePath, Buffer.from(await file.arrayBuffer()))
 
+    console.log("File saved at:", filePath) // Debugging
+
     return {
       success: true,
-      url: `http://192.168.1.247:3000/local-uploads/${uniqueFilename}`, // Simulate a URL
+      url: `http://192.168.1.247:3000/local-uploads/${file.name}`, // Simulate a URL
       filename: file.name,
     }
   } catch (error) {
