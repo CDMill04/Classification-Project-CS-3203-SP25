@@ -1,22 +1,29 @@
 "use client"
 
-import type React from "react"
+const USER_EMAIL = "userEmail@example.com"
 
-import { useState } from "react"
-import { uploadToBlob } from "./actions"
+import { useState, useEffect } from "react"
+import { uploadToBlob, fetchUserUploads, updateUserUploads } from "./actions"
 
 export default function FileUpload() {
   const [files, setFiles] = useState<File[]>([])
   const [uploading, setUploading] = useState(false)
   const [uploadedFiles, setUploadedFiles] = useState<
-    { name: string; url: string; course: string; assignment: string }[]
+    { date: string; filename: string; semester: string; status: string }[]
   >([])
-  const [course, setCourse] = useState("")
-  const [assignment, setAssignment] = useState("")
-  const [fileType, setFileType] = useState("")
-  const [description, setDescription] = useState("")
+  const [semester, setSemester] = useState("")
   const [error, setError] = useState("")
   const [uploadSuccess, setUploadSuccess] = useState(false)
+
+  // Fetch the user's uploads when the component mounts
+  useEffect(() => {
+    const fetchUploads = async () => {
+      const uploads = await fetchUserUploads("USER_EMAIL") // Replace with actual user email
+      setUploadedFiles(uploads)
+    }
+
+    fetchUploads()
+  }, [])
 
   const handleFileChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     if (e.target.files) {
@@ -34,8 +41,8 @@ export default function FileUpload() {
       return
     }
 
-    if (!course || !assignment || !fileType) {
-      setError("Please fill out all required fields")
+    if (!semester) {
+      setError("Please fill out semester")
       return
     }
 
@@ -47,10 +54,7 @@ export default function FileUpload() {
       const uploadPromises = files.map(async (file) => {
         const formData = new FormData()
         formData.append("file", file)
-        formData.append("course", course)
-        formData.append("assignment", assignment)
-        formData.append("fileType", fileType)
-        formData.append("description", description)
+        formData.append("semester", semester)
 
         const result = await uploadToBlob(formData)
 
@@ -58,25 +62,25 @@ export default function FileUpload() {
           throw new Error(result.error || "Upload failed")
         }
 
-        return {
-          name: file.name,
-          url: result.url,
-          course,
-          assignment,
+        // Add the new file data to the user's JSON file
+        const newUpload = {
+          date: new Date().toISOString().split("T")[0], // Current date in YYYY-MM-DD format
+          filename: file.name,
+          semester,
+          status: "Pending",
         }
+
+        await updateUserUploads("USER_EMAIL", newUpload) // Replace with actual user email
+
+        return newUpload
       })
 
       const results = await Promise.all(uploadPromises)
 
+      // Update the table with the new uploads
       setUploadedFiles((prev) => [...results, ...prev])
       setFiles([])
       setUploadSuccess(true)
-
-      // Keep the form values for convenience if uploading multiple batches
-      // setCourse('')
-      // setAssignment('')
-      // setFileType('')
-      // setDescription('')
     } catch (err) {
       console.error("Upload error:", err)
       setError("An error occurred during upload: " + (err instanceof Error ? err.message : "Unknown error"))
@@ -85,16 +89,10 @@ export default function FileUpload() {
     }
   }
 
-  // Generate current date in YYYY-MM-DD format
-  const getCurrentDate = () => {
-    const now = new Date()
-    return now.toISOString().split("T")[0]
-  }
-
   return (
     <>
       <h2>File Upload Center</h2>
-      <p>Upload assignments, projects, and other documents to your courses.</p>
+      <p>Upload lesson plan files.</p>
 
       <div className="upload-section">
         <h3>Upload New File</h3>
@@ -102,47 +100,17 @@ export default function FileUpload() {
         {uploadSuccess && <div className="success-message">Files uploaded successfully!</div>}
         <form onSubmit={handleSubmit}>
           <div className="form-group">
-            <label>Course:</label>
-            <select value={course} onChange={(e) => setCourse(e.target.value)} required>
-              <option value="">Select a course</option>
-              <option value="Introduction to Computer Science">Introduction to Computer Science</option>
-              <option value="Advanced Mathematics">Advanced Mathematics</option>
-              <option value="English Literature">English Literature</option>
-            </select>
-          </div>
-          <div className="form-group">
-            <label>Assignment:</label>
-            <select value={assignment} onChange={(e) => setAssignment(e.target.value)} required>
-              <option value="">Select an assignment</option>
-              <option value="Homework #3">Homework #3</option>
-              <option value="Term Paper">Term Paper</option>
-              <option value="Final Project">Final Project</option>
-              <option value="Other">Other</option>
-            </select>
-          </div>
-          <div className="form-group">
-            <label>File Type:</label>
-            <select value={fileType} onChange={(e) => setFileType(e.target.value)} required>
-              <option value="">Select file type</option>
-              <option value="Assignment Submission">Assignment Submission</option>
-              <option value="Project Documentation">Project Documentation</option>
-              <option value="Supplementary Material">Supplementary Material</option>
-              <option value="Other">Other</option>
+            <label>Semester:</label>
+            <select value={semester} onChange={(e) => setSemester(e.target.value)} required>
+              <option value="">Select a semester</option>
+              <option value="Spring">Spring</option>
+              <option value="Fall">Fall</option>
             </select>
           </div>
           <div className="form-group">
             <label>Select File:</label>
             <input type="file" multiple onChange={handleFileChange} required />
-            <p className="file-hint">Accepted formats: PDF, DOCX, PPTX, ZIP (Max size: 50MB)</p>
-          </div>
-          <div className="form-group">
-            <label>Description:</label>
-            <textarea
-              rows={3}
-              placeholder="Brief description of the uploaded file(s)..."
-              value={description}
-              onChange={(e) => setDescription(e.target.value)}
-            ></textarea>
+            <p className="file-hint">Accepted formats: PDF, DOCX (Max size: 50MB)</p>
           </div>
           <button type="submit" disabled={uploading} className={uploading ? "uploading" : ""}>
             {uploading ? "Uploading..." : "Upload Files"}
@@ -157,107 +125,22 @@ export default function FileUpload() {
             <tr>
               <th>Date</th>
               <th>Filename</th>
-              <th>Course</th>
-              <th>Assignment</th>
+              <th>Semester</th>
               <th>Status</th>
-              <th>Actions</th>
             </tr>
           </thead>
           <tbody>
             {uploadedFiles.map((file, index) => (
               <tr key={index}>
-                <td>{getCurrentDate()}</td>
-                <td>{file.name}</td>
-                <td>{file.course}</td>
-                <td>{file.assignment}</td>
-                <td>
-                  <span className="status-pending">Pending Review</span>
-                </td>
-                <td>
-                  <a href={file.url} target="_blank" rel="noopener noreferrer" className="action-link">
-                    View
-                  </a>{" "}
-                  |
-                  <a href="#" className="action-link">
-                    Replace
-                  </a>{" "}
-                  |
-                  <a href="#" className="action-link">
-                    Delete
-                  </a>
-                </td>
+                <td>{file.date}</td>
+                <td>{file.filename}</td>
+                <td>{file.semester}</td>
+                <td>{file.status}</td>
               </tr>
             ))}
-            {uploadedFiles.length === 0 && (
-              <>
-                <tr>
-                  <td>Apr 2, 2025</td>
-                  <td>final-project.pdf</td>
-                  <td>Computer Science</td>
-                  <td>Final Project</td>
-                  <td>
-                    <span className="status-pending">Pending Review</span>
-                  </td>
-                  <td>
-                    <a href="#" className="action-link">
-                      View
-                    </a>{" "}
-                    |
-                    <a href="#" className="action-link">
-                      Replace
-                    </a>{" "}
-                    |
-                    <a href="#" className="action-link">
-                      Delete
-                    </a>
-                  </td>
-                </tr>
-                <tr>
-                  <td>Mar 28, 2025</td>
-                  <td>math-homework3.docx</td>
-                  <td>Advanced Mathematics</td>
-                  <td>Homework #3</td>
-                  <td>
-                    <span className="status-approved">Approved</span>
-                  </td>
-                  <td>
-                    <a href="#" className="action-link">
-                      View
-                    </a>{" "}
-                    |
-                    <a href="#" className="action-link">
-                      Replace
-                    </a>{" "}
-                    |
-                    <a href="#" className="action-link">
-                      Delete
-                    </a>
-                  </td>
-                </tr>
-                <tr>
-                  <td>Mar 15, 2025</td>
-                  <td>literature-essay.docx</td>
-                  <td>English Literature</td>
-                  <td>Term Paper</td>
-                  <td>
-                    <span className="status-graded">Graded: A-</span>
-                  </td>
-                  <td>
-                    <a href="#" className="action-link">
-                      View
-                    </a>{" "}
-                    |
-                    <a href="#" className="action-link">
-                      Download
-                    </a>
-                  </td>
-                </tr>
-              </>
-            )}
           </tbody>
         </table>
       </div>
-
       <style jsx>{`
         .upload-section {
           background-color: #f8f9fa;
