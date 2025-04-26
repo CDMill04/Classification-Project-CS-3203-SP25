@@ -1,74 +1,85 @@
-/*
-"use server"
 
-import { put } from "@vercel/blob"
-import { revalidatePath } from "next/cache"
+"use server";
 
+import { put } from "@vercel/blob";
+
+// Simulate uploading a file to Vercel Blob
 export async function uploadToBlob(formData: FormData) {
   try {
-    const file = formData.get("file") as File
+    const file = formData.get("file") as File;
 
     if (!file) {
-      throw new Error("No file provided")
+      throw new Error("No file provided");
     }
 
     // Generate a unique filename to avoid collisions
-    const uniqueFilename = `${Date.now()}-${file.name}`
+    const uniqueFilename = `${Date.now()}-${file.name}`;
 
-    // Upload to Vercel Blob
+    // Upload the file to Vercel Blob
     const blob = await put(uniqueFilename, file, {
-      access: "public",
-    })
+      access: "public", // Make the file publicly accessible
+    });
 
-    // Revalidate the file-upload page to show the new upload
-    revalidatePath("/file-upload")
+    console.log("File uploaded to Vercel Blob:", blob.url); // Debugging
 
     return {
       success: true,
-      url: blob.url,
-      filename: file.name,
-    }
+      url: blob.url, // Return the public URL of the uploaded file
+      filename: uniqueFilename, // Return the unique filename
+    };
   } catch (error) {
-    console.error("Error uploading to blob:", error)
+    console.error("Error uploading to Vercel Blob:", error);
     return {
       success: false,
       error: "Failed to upload file. " + (error instanceof Error ? error.message : "Unknown error"),
-    }
+    };
   }
 }
 
+// Fetch user uploads from a JSON file stored in Vercel Blob
 export async function fetchUserUploads(USER_EMAIL: string) {
   try {
-    const response = await fetch(`https://vercel.blob/${USER_EMAIL}.json`) // Replace with actual blob URL
+    const blobUrl = `https://vercel.blob/${USER_EMAIL}.json`; // Replace with your actual Vercel Blob base URL
+
+    // Fetch the JSON file from Vercel Blob
+    const response = await fetch(blobUrl);
+
     if (!response.ok) {
       // If the file doesn't exist, return an empty array
-      return []
+      console.log("No uploads found, returning empty array"); // Debugging
+      return [];
     }
-    return await response.json()
+
+    const uploads = await response.json();
+    console.log("Fetched uploads from Vercel Blob:", uploads); // Debugging
+    return uploads;
   } catch (error) {
-    console.error("Error fetching user uploads:", error)
-    return []
+    console.error("Error fetching user uploads from Vercel Blob:", error);
+    return [];
   }
 }
 
+// Update user uploads in a JSON file stored in Vercel Blob
 export async function updateUserUploads(USER_EMAIL: string, newUpload: object) {
   try {
-    const existingUploads = await fetchUserUploads(USER_EMAIL)
-    const updatedUploads = [...existingUploads, newUpload]
+    // Fetch the existing uploads
+    const existingUploads = await fetchUserUploads(USER_EMAIL);
+    const updatedUploads = [...existingUploads, newUpload];
 
-    // Upload the updated JSON file to the blob storage
+    // Upload the updated JSON file to Vercel Blob
     const blob = await put(`${USER_EMAIL}.json`, JSON.stringify(updatedUploads), {
-      access: "public",
-    })
+      access: "public", // Make the JSON file publicly accessible
+    });
 
-    return blob.url
+    console.log("Updated uploads saved to Vercel Blob:", blob.url); // Debugging
+    return blob.url; // Return the public URL of the updated JSON file
   } catch (error) {
-    console.error("Error updating user uploads:", error)
-    throw error
+    console.error("Error updating user uploads in Vercel Blob:", error);
+    throw error;
   }
 }
-*/
 
+/*
 "use server"
 
 import fs from "fs/promises"
@@ -162,3 +173,4 @@ export async function updateUserUploads(USER_EMAIL: string, newUpload: object) {
     throw error
   }
 }
+*/
