@@ -18,8 +18,9 @@ export default function FileUpload() {
   // Fetch the user's uploads when the component mounts
   useEffect(() => {
     const fetchUploads = async () => {
-      const uploads = await fetchUserUploads(USER_EMAIL) // Replace with actual user email
-      setUploadedFiles(uploads)
+      const uploads = await fetchUserUploads(USER_EMAIL) // Fetch the data
+      console.log("Fetched uploads 2:", uploads) // Debugging
+      setUploadedFiles(uploads) // Update the state
     }
 
     fetchUploads()
