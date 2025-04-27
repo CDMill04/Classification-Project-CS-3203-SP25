@@ -1,73 +1,93 @@
-"use client"
+"use client";
 
-const USER_EMAIL = "userEmail@example.com"
+const USER_EMAIL = "userEmail@example.com";
 
-import { useState, useEffect } from "react"
-import { uploadToBlob, fetchUserUploads, updateUserUploads } from "./actions"
+import { useState, useEffect } from "react";
+import { uploadToBlob, fetchUserUploads, updateUserUploads, updateUploadStatus } from "./actions";
 
 export default function FileUpload() {
-  console.log("FileUpload component rendered"); // Debugging
-  const [files, setFiles] = useState<File[]>([])
-  const [uploading, setUploading] = useState(false)
+  const [files, setFiles] = useState<File[]>([]);
+  const [uploading, setUploading] = useState(false);
   const [uploadedFiles, setUploadedFiles] = useState<
     { date: string; filename: string; semester: string; status: string }[]
-  >([])
-  const [semester, setSemester] = useState("")
-  const [error, setError] = useState("")
-  const [uploadSuccess, setUploadSuccess] = useState(false)
+  >([]);
+  const [semester, setSemester] = useState("");
+  const [error, setError] = useState("");
+  const [uploadSuccess, setUploadSuccess] = useState(false);
 
-  // Fetch the user's uploads when the component mounts
-  useEffect(() => {
-    console.log("useEffect triggered"); // Debugging
-
-    const fetchUploads = async () => {
-      try {
-        const uploads = await fetchUserUploads(USER_EMAIL)
-        console.log("Fetched uploads:", uploads) // Debugging
-        setUploadedFiles(uploads)
-      } catch (error) {
-        console.error("Error in fetchUploads:", error) // Debugging
-      }
+  // Fetch the user's uploads
+  const fetchUploads = async () => {
+    try {
+      const uploads = await fetchUserUploads(USER_EMAIL);
+      console.log("Fetched uploads:", uploads); // Debugging line
+      setUploadedFiles(uploads);
+    } catch (error) {
+      console.error("Error in fetchUploads:", error);
     }
+  };
 
-    fetchUploads()
-  }, []) // Dependency array is empty
+  // Trigger fetchUploads on mount
+  useEffect(() => {
+    console.log("Fetching uploads...");
+    fetchUploads();
+  }, []);
+
+  // Handle status update
+  const handleStatusChange = async (index: number, newStatus: string) => {
+    try {
+      const updatedFiles = [...uploadedFiles];
+      const fileToUpdate = updatedFiles[index];
+  
+      // Update the status locally
+      fileToUpdate.status = newStatus;
+  
+      // Call the new function to update the status in Vercel Blob
+      await updateUploadStatus(USER_EMAIL, fileToUpdate.filename, newStatus);
+  
+      // Update the state
+      setUploadedFiles(updatedFiles);
+      console.log("Status updated successfully:", fileToUpdate);
+    } catch (error) {
+      console.error("Error updating status:", error);
+      setError("Failed to update status. Please try again.");
+    }
+  };
 
   const handleFileChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     if (e.target.files) {
-      setFiles(Array.from(e.target.files))
-      setError("")
-      setUploadSuccess(false)
+      setFiles(Array.from(e.target.files));
+      setError("");
+      setUploadSuccess(false);
     }
-  }
+  };
 
   const handleSubmit = async (e: React.FormEvent) => {
-    e.preventDefault()
+    e.preventDefault();
 
     if (files.length === 0) {
-      setError("Please select at least one file to upload")
-      return
+      setError("Please select at least one file to upload");
+      return;
     }
 
     if (!semester) {
-      setError("Please fill out semester")
-      return
+      setError("Please fill out semester");
+      return;
     }
 
-    setUploading(true)
-    setError("")
-    setUploadSuccess(false)
+    setUploading(true);
+    setError("");
+    setUploadSuccess(false);
 
     try {
       const uploadPromises = files.map(async (file) => {
-        const formData = new FormData()
-        formData.append("file", file)
-        formData.append("semester", semester)
+        const formData = new FormData();
+        formData.append("file", file);
+        formData.append("semester", semester);
 
-        const result = await uploadToBlob(formData)
+        const result = await uploadToBlob(formData);
 
         if (!result.success) {
-          throw new Error(result.error || "Upload failed")
+          throw new Error(result.error || "Upload failed");
         }
 
         // Add the new file data to the user's JSON file
@@ -76,26 +96,30 @@ export default function FileUpload() {
           filename: file.name,
           semester,
           status: "Pending",
-        }
+          url: result.url,
+        };
 
-        await updateUserUploads(USER_EMAIL, newUpload) // Replace with actual user email
+        await updateUserUploads(USER_EMAIL, newUpload);
 
-        return newUpload
-      })
+        return newUpload;
+      });
 
-      const results = await Promise.all(uploadPromises)
+      const results = await Promise.all(uploadPromises);
 
       // Update the table with the new uploads
-      setUploadedFiles((prev) => [...results, ...prev])
-      setFiles([])
-      setUploadSuccess(true)
+      setUploadedFiles((prev) => [...results, ...prev]);
+      setFiles([]);
+      setUploadSuccess(true);
     } catch (err) {
-      console.error("Upload error:", err)
-      setError("An error occurred during upload: " + (err instanceof Error ? err.message : "Unknown error"))
+      console.error("Upload error:", err);
+      setError(
+        "An error occurred during upload: " +
+          (err instanceof Error ? err.message : "Unknown error")
+      );
     } finally {
-      setUploading(false)
+      setUploading(false);
     }
-  }
+  };
 
   return (
     <>
@@ -105,11 +129,17 @@ export default function FileUpload() {
       <div className="upload-section">
         <h3>Upload New File</h3>
         {error && <div className="error-message">{error}</div>}
-        {uploadSuccess && <div className="success-message">Files uploaded successfully!</div>}
+        {uploadSuccess && (
+          <div className="success-message">Files uploaded successfully!</div>
+        )}
         <form onSubmit={handleSubmit}>
           <div className="form-group">
             <label>Semester:</label>
-            <select value={semester} onChange={(e) => setSemester(e.target.value)} required>
+            <select
+              value={semester}
+              onChange={(e) => setSemester(e.target.value)}
+              required
+            >
               <option value="">Select a semester</option>
               <option value="Spring">Spring</option>
               <option value="Fall">Fall</option>
@@ -118,9 +148,15 @@ export default function FileUpload() {
           <div className="form-group">
             <label>Select File:</label>
             <input type="file" multiple onChange={handleFileChange} required />
-            <p className="file-hint">Accepted formats: PDF, DOCX (Max size: 50MB)</p>
+            <p className="file-hint">
+              Accepted formats: PDF, DOCX (Max size: 50MB)
+            </p>
           </div>
-          <button type="submit" disabled={uploading} className={uploading ? "uploading" : ""}>
+          <button
+            type="submit"
+            disabled={uploading}
+            className={uploading ? "uploading" : ""}
+          >
             {uploading ? "Uploading..." : "Upload Files"}
           </button>
         </form>
@@ -135,6 +171,7 @@ export default function FileUpload() {
               <th>Filename</th>
               <th>Semester</th>
               <th>Status</th>
+              <th>Actions</th>
             </tr>
           </thead>
           <tbody>
@@ -143,7 +180,7 @@ export default function FileUpload() {
                 <td>{file.date}</td>
                 <td>
                   <a
-                    href={`http://192.168.1.247:3000/local-uploads/${file.filename}`}
+                    href={file.url}
                     target="_blank"
                     rel="noopener noreferrer"
                   >
@@ -151,7 +188,23 @@ export default function FileUpload() {
                   </a>
                 </td>
                 <td>{file.semester}</td>
-                <td>{file.status}</td>
+                <td className={`status-${file.status.toLowerCase()}`}>
+                  {file.status}
+                </td>
+                <td>
+                  <button
+                    className="action-link approve"
+                    onClick={() => handleStatusChange(index, "Approved")}
+                  >
+                    Approve
+                  </button>
+                  <button
+                    className="action-link disapprove"
+                    onClick={() => handleStatusChange(index, "Disapproved")}
+                  >
+                    Disapprove
+                  </button>
+                </td>
               </tr>
             ))}
           </tbody>
@@ -220,21 +273,50 @@ export default function FileUpload() {
           color: #27ae60;
           font-weight: bold;
         }
-        
-        .status-graded {
-          color: #3498db;
+
+        .status-disapproved {
+          color: #e74c3c;
           font-weight: bold;
         }
         
         .action-link {
-          color: #3498db;
-          text-decoration: none;
-          margin: 0 5px;
+          display: inline-block;
+          padding: 0.25rem 0.5rem; /* Adjust padding for smaller buttons */
+          font-size: 0.9rem; /* Reduce font size */
+          border: 1px solid transparent; /* Add a border for better visibility */
+          border-radius: 4px; /* Rounded corners */
           cursor: pointer;
+          margin: 0 5px; /* Add spacing between buttons */
+          text-align: center;
+          text-decoration: none;
+          transition: background-color 0.3s, color 0.3s;
         }
-        
-        .action-link:hover {
-          text-decoration: underline;
+
+        .action-link.approve {
+          background-color: #28a745; /* Green background */
+          color: white; /* White text */
+          border-color: #28a745; /* Green border */
+        }
+
+        .action-link.approve:hover {
+          background-color: #218838; /* Darker green on hover */
+          border-color: #1e7e34;
+        }
+
+        .action-link.disapprove {
+          background-color: #dc3545; /* Red background */
+          color: white; /* White text */
+          border-color: #dc3545; /* Red border */
+        }
+
+        .action-link.disapprove:hover {
+          background-color: #c82333; /* Darker red on hover */
+          border-color: #bd2130;
+        }
+
+        .action-link:focus {
+          outline: none; /* Remove default focus outline */
+          box-shadow: 0 0 0 3px rgba(0, 123, 255, 0.25); /* Add custom focus outline */
         }
 
         .error-message {
@@ -294,4 +376,3 @@ export default function FileUpload() {
     </>
   )
 }
-

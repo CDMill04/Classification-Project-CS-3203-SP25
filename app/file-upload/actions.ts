@@ -39,10 +39,10 @@ export async function uploadToBlob(formData: FormData) {
 // Fetch user uploads from a JSON file stored in Vercel Blob
 export async function fetchUserUploads(USER_EMAIL: string) {
   try {
-    const blobUrl = `https://vercel.blob/${USER_EMAIL}.json`; // Replace with your actual Vercel Blob base URL
+    const blobUrl = `https://r3agn7hsgw8mrqmz.public.blob.vercel-storage.com/${USER_EMAIL}.json`; // Replace with your actual Vercel Blob base URL
 
     // Fetch the JSON file from Vercel Blob
-    const response = await fetch(blobUrl);
+    const response = await fetch(blobUrl, { cache: "no-store" });
 
     if (!response.ok) {
       // If the file doesn't exist, return an empty array
@@ -75,6 +75,33 @@ export async function updateUserUploads(USER_EMAIL: string, newUpload: object) {
     return blob.url; // Return the public URL of the updated JSON file
   } catch (error) {
     console.error("Error updating user uploads in Vercel Blob:", error);
+    throw error;
+  }
+}
+
+// Update the status of a specific upload in the JSON file stored in Vercel Blob
+export async function updateUploadStatus(USER_EMAIL: string, filename: string, newStatus: string) {
+  try {
+    // Fetch the existing uploads
+    const existingUploads = await fetchUserUploads(USER_EMAIL);
+
+    // Find and update the specific file's status
+    const updatedUploads = existingUploads.map((upload: any) =>
+      upload.filename === filename ? { ...upload, status: newStatus } : upload
+    );
+
+    console.log("Updated uploads array:", updatedUploads); // Debugging
+
+    // Upload the updated JSON file to Vercel Blob
+    const blob = await put(`${USER_EMAIL}.json`, JSON.stringify(updatedUploads), {
+      access: "public", // Make the JSON file publicly accessible
+      allowOverwrite: true, // Allow overwriting the existing file
+    });
+
+    console.log("Updated status saved to Vercel Blob:", blob.url); // Debugging
+    return blob.url; // Return the public URL of the updated JSON file
+  } catch (error) {
+    console.error("Error updating upload status in Vercel Blob:", error);
     throw error;
   }
 }
