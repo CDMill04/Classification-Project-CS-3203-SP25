@@ -12,12 +12,14 @@ export async function uploadToBlob(formData: FormData) {
       throw new Error("No file provided");
     }
 
-    // Generate a unique filename to avoid collisions
-    const uniqueFilename = `${Date.now()}-${file.name}`;
+    // Use the original filename
+    const filename = file.name;
 
     // Upload the file to Vercel Blob
-    const blob = await put(uniqueFilename, file, {
+    const blob = await put(filename, file, {
       access: "public", // Make the file publicly accessible
+      allowOverwrite: true, // Allow overwriting the existing file
+      cacheControlMaxAge: 60, // Set cache control max age to 60 seconds
     });
 
     console.log("File uploaded to Vercel Blob:", blob.url); // Debugging
@@ -25,7 +27,7 @@ export async function uploadToBlob(formData: FormData) {
     return {
       success: true,
       url: blob.url, // Return the public URL of the uploaded file
-      filename: uniqueFilename, // Return the unique filename
+      filename: filename, // Return the filename
     };
   } catch (error) {
     console.error("Error uploading to Vercel Blob:", error);
@@ -39,13 +41,23 @@ export async function uploadToBlob(formData: FormData) {
 // Fetch user uploads from a JSON file stored in Vercel Blob
 export async function fetchUserUploads(USER_EMAIL: string) {
   try {
-    const blobUrl = `https://r3agn7hsgw8mrqmz.public.blob.vercel-storage.com/${USER_EMAIL}.json`; // Replace with your actual Vercel Blob base URL
+    const randomQuery = Math.random().toString(36).substring(2, 15); // Generate a random query string
+    const blobUrl = `https://r3agn7hsgw8mrqmz.public.blob.vercel-storage.com/${USER_EMAIL}.json?v=${randomQuery}`; // Replace with your actual Vercel Blob base URL
+    console.log("Blob URL:", blobUrl); // Debugging
 
     // Fetch the JSON file from Vercel Blob
-    const response = await fetch(blobUrl, { cache: "no-store" });
+    const response = await fetch(blobUrl, { 
+      cache: "no-store", 
+      headers: {
+        "Cache-Control": "no-cache", // Disable caching
+      }
+    });
+    console.log("Fetching uploads from Vercel Blob:", response); // Debugging
 
     if (!response.ok) {
       // If the file doesn't exist, return an empty array
+      console.log("Response status:", response.status);
+      console.log("Response status text:", response.statusText);
       console.log("No uploads found, returning empty array"); // Debugging
       return [];
     }
@@ -69,6 +81,8 @@ export async function updateUserUploads(USER_EMAIL: string, newUpload: object) {
     // Upload the updated JSON file to Vercel Blob
     const blob = await put(`${USER_EMAIL}.json`, JSON.stringify(updatedUploads), {
       access: "public", // Make the JSON file publicly accessible
+      allowOverwrite: true, // Allow overwriting the existing file
+      cacheControlMaxAge: 60, // Set cache control max age to 60 seconds
     });
 
     console.log("Updated uploads saved to Vercel Blob:", blob.url); // Debugging
@@ -96,6 +110,7 @@ export async function updateUploadStatus(USER_EMAIL: string, filename: string, n
     const blob = await put(`${USER_EMAIL}.json`, JSON.stringify(updatedUploads), {
       access: "public", // Make the JSON file publicly accessible
       allowOverwrite: true, // Allow overwriting the existing file
+      cacheControlMaxAge: 60, // Set cache control max age to 60 seconds
     });
 
     console.log("Updated status saved to Vercel Blob:", blob.url); // Debugging

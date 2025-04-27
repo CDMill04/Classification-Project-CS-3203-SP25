@@ -14,15 +14,19 @@ export default function FileUpload() {
   const [semester, setSemester] = useState("");
   const [error, setError] = useState("");
   const [uploadSuccess, setUploadSuccess] = useState(false);
+  const [loading, setLoading] = useState(true);
 
   // Fetch the user's uploads
   const fetchUploads = async () => {
     try {
+      setLoading(true); // Start loading
       const uploads = await fetchUserUploads(USER_EMAIL);
       console.log("Fetched uploads:", uploads); // Debugging line
       setUploadedFiles(uploads);
     } catch (error) {
       console.error("Error in fetchUploads:", error);
+    } finally {
+      setLoading(false); // Stop loading
     }
   };
 
@@ -99,15 +103,17 @@ export default function FileUpload() {
           url: result.url,
         };
 
+        // Update the local state immediately
+        setUploadedFiles((prev) => [newUpload, ...prev]);
+
+        // Update the JSON file in Vercel Blob
         await updateUserUploads(USER_EMAIL, newUpload);
 
         return newUpload;
       });
 
-      const results = await Promise.all(uploadPromises);
+      await Promise.all(uploadPromises);
 
-      // Update the table with the new uploads
-      setUploadedFiles((prev) => [...results, ...prev]);
       setFiles([]);
       setUploadSuccess(true);
     } catch (err) {
@@ -126,90 +132,96 @@ export default function FileUpload() {
       <h2>File Upload Center</h2>
       <p>Upload lesson plan files.</p>
 
-      <div className="upload-section">
-        <h3>Upload New File</h3>
-        {error && <div className="error-message">{error}</div>}
-        {uploadSuccess && (
-          <div className="success-message">Files uploaded successfully!</div>
-        )}
-        <form onSubmit={handleSubmit}>
-          <div className="form-group">
-            <label>Semester:</label>
-            <select
-              value={semester}
-              onChange={(e) => setSemester(e.target.value)}
-              required
-            >
-              <option value="">Select a semester</option>
-              <option value="Spring">Spring</option>
-              <option value="Fall">Fall</option>
-            </select>
+      {loading ? (
+        <p>Loading uploads...</p> // Display a loading message or spinner
+      ) : (
+        <>
+          <div className="upload-section">
+            <h3>Upload New File</h3>
+            {error && <div className="error-message">{error}</div>}
+            {uploadSuccess && (
+              <div className="success-message">Files uploaded successfully!</div>
+            )}
+            <form onSubmit={handleSubmit}>
+              <div className="form-group">
+                <label>Semester:</label>
+                <select
+                  value={semester}
+                  onChange={(e) => setSemester(e.target.value)}
+                  required
+                >
+                  <option value="">Select a semester</option>
+                  <option value="Spring">Spring</option>
+                  <option value="Fall">Fall</option>
+                </select>
+              </div>
+              <div className="form-group">
+                <label>Select File:</label>
+                <input type="file" multiple onChange={handleFileChange} required />
+                <p className="file-hint">
+                  Accepted formats: PDF, DOCX (Max size: 50MB)
+                </p>
+              </div>
+              <button
+                type="submit"
+                disabled={uploading}
+                className={uploading ? "uploading" : ""}
+              >
+                {uploading ? "Uploading..." : "Upload Files"}
+              </button>
+            </form>
           </div>
-          <div className="form-group">
-            <label>Select File:</label>
-            <input type="file" multiple onChange={handleFileChange} required />
-            <p className="file-hint">
-              Accepted formats: PDF, DOCX (Max size: 50MB)
-            </p>
-          </div>
-          <button
-            type="submit"
-            disabled={uploading}
-            className={uploading ? "uploading" : ""}
-          >
-            {uploading ? "Uploading..." : "Upload Files"}
-          </button>
-        </form>
-      </div>
 
-      <div className="upload-section">
-        <h3>Recent Uploads</h3>
-        <table className="uploads-table">
-          <thead>
-            <tr>
-              <th>Date</th>
-              <th>Filename</th>
-              <th>Semester</th>
-              <th>Status</th>
-              <th>Actions</th>
-            </tr>
-          </thead>
-          <tbody>
-            {uploadedFiles.map((file, index) => (
-              <tr key={index}>
-                <td>{file.date}</td>
-                <td>
-                  <a
-                    href={file.url}
-                    target="_blank"
-                    rel="noopener noreferrer"
-                  >
-                    {file.filename}
-                  </a>
-                </td>
-                <td>{file.semester}</td>
-                <td className={`status-${file.status.toLowerCase()}`}>
-                  {file.status}
-                </td>
-                <td>
-                  <button
-                    className="action-link approve"
-                    onClick={() => handleStatusChange(index, "Approved")}
-                  >
-                    Approve
-                  </button>
-                  <button
-                    className="action-link disapprove"
-                    onClick={() => handleStatusChange(index, "Disapproved")}
-                  >
-                    Disapprove
-                  </button>
-                </td>
-              </tr>
-            ))}
-          </tbody>
-        </table>
-      </div>
+          <div className="upload-section">
+            <h3>Recent Uploads - Can take up to a minute to upload</h3>
+            <table className="uploads-table">
+              <thead>
+                <tr>
+                  <th>Date</th>
+                  <th>Filename</th>
+                  <th>Semester</th>
+                  <th>Status</th>
+                  <th>Actions</th>
+                </tr>
+              </thead>
+              <tbody>
+                {uploadedFiles.map((file, index) => (
+                  <tr key={index}>
+                    <td>{file.date}</td>
+                    <td>
+                      <a
+                        href={file.url}
+                        target="_blank"
+                        rel="noopener noreferrer"
+                      >
+                        {file.filename}
+                      </a>
+                    </td>
+                    <td>{file.semester}</td>
+                    <td className={`status-${file.status.toLowerCase()}`}>
+                      {file.status}
+                    </td>
+                    <td>
+                      <button
+                        className="action-link approve"
+                        onClick={() => handleStatusChange(index, "Approved")}
+                      >
+                        Approve
+                      </button>
+                      <button
+                        className="action-link disapprove"
+                        onClick={() => handleStatusChange(index, "Disapproved")}
+                      >
+                        Disapprove
+                      </button>
+                    </td>
+                  </tr>
+                ))}
+              </tbody>
+            </table>
+          </div>
+        </>
+      )}
       <style jsx>{`
         .upload-section {
           background-color: #f8f9fa;
