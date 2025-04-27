@@ -13,8 +13,8 @@ export default function RootLayout({
 }: {
   children: React.ReactNode;
 }) {
-  return (
-    <html lang="en">
+  return (  // Had to change the next line in order to not throw hydration errors. Specified client-side settings
+    <html lang="en" className="light" style={{ colorScheme: "light" }}> 
       <head>
         <link
           href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;600;700&display=swap"
