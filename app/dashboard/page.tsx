@@ -4,6 +4,7 @@ import { useEffect, useState } from "react";
 import LoginModal from "@/app/components/modals/loginPage";
 import SignUpModal from "@/app/components/modals/SignUpPage";
 import { Button } from "@/app/components/ui/button";
+import Layout from "@/app/components/Layout";
 
 export default function Dashboard() {
   const [isLoginOpen, setLoginOpen] = useState(false);
@@ -14,7 +15,6 @@ export default function Dashboard() {
     setIsMounted(true);
   }, []);
 
-  // Functions to open/close modals
   const openLogin = () => {
     setLoginOpen(true);
     setSignUpOpen(false);
@@ -30,12 +30,12 @@ export default function Dashboard() {
     setSignUpOpen(false);
   };
 
-  if (!isMounted) return null; // This forces it to wait for the client
+  if (!isMounted) return null; // Wait for client render
 
   return (
-    <>
+    <Layout>
       {/* Top Bar */}
-      <div className="flex justify-between items-center p-4 border-b">
+      <div className="sticky top-0 z-20 flex justify-between items-center p-4 bg-background border-b">
         <h2 className="text-2xl font-bold">Dashboard</h2>
         <Button
           onClick={openLogin}
@@ -45,65 +45,74 @@ export default function Dashboard() {
         </Button>
       </div>
 
-      {/* Dashboard content */}
+      {/* Main Dashboard Content */}
       <div className="p-6">
-        <p>View your learning progress and upcoming assignments.</p>
+        <p className="text-lg mb-6">
+          View your learning progress and upcoming assignments.
+        </p>
 
-        <div className="dashboard-grid mt-6">
-          <div className="dashboard-card">
-            <h3>Current Courses</h3>
-            <ul>
+        <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+          {/* Card 1: Current Courses */}
+          <div className="p-6 rounded-2xl border shadow bg-card">
+            <h3 className="text-xl font-semibold mb-2">Current Courses</h3>
+            <ul className="list-disc list-inside text-muted-foreground">
               <li>Introduction to Computer Science</li>
               <li>Advanced Mathematics</li>
               <li>English Literature</li>
             </ul>
           </div>
 
-          <div className="dashboard-card">
-            <h3>Upcoming Assignments</h3>
-            <ul>
+          {/* Card 2: Upcoming Assignments */}
+          <div className="p-6 rounded-2xl border shadow bg-card">
+            <h3 className="text-xl font-semibold mb-2">Upcoming Assignments</h3>
+            <ul className="list-disc list-inside text-muted-foreground">
               <li>CS101 Project - Due Apr 15</li>
               <li>Math Quiz - Due Apr 10</li>
               <li>Literature Essay - Due Apr 20</li>
             </ul>
           </div>
 
-          <div className="dashboard-card">
-            <h3>Recent Grades</h3>
-            <ul>
+          {/* Card 3: Recent Grades */}
+          <div className="p-6 rounded-2xl border shadow bg-card">
+            <h3 className="text-xl font-semibold mb-2">Recent Grades</h3>
+            <ul className="list-disc list-inside text-muted-foreground">
               <li>CS101 Midterm - 92%</li>
               <li>Math Assignment - 88%</li>
               <li>Literature Discussion - 95%</li>
             </ul>
           </div>
 
-          <div className="dashboard-card">
-            <h3>Learning Progress</h3>
-            <div className="progress-bar">
-              <div className="progress" style={{ width: "75%" }}>
-                75%
-              </div>
+          {/* Card 4: Learning Progress */}
+          <div className="p-6 rounded-2xl border shadow bg-card">
+            <h3 className="text-xl font-semibold mb-2">Learning Progress</h3>
+            <div className="w-full bg-muted rounded-full h-4 mb-2">
+              <div
+                className="bg-[hsl(var(--primary))] h-4 rounded-full"
+                style={{ width: "75%" }}
+              ></div>
             </div>
-            <p>Overall completion rate for current semester</p>
+            <p className="text-sm text-muted-foreground">
+              Overall completion rate for current semester
+            </p>
           </div>
         </div>
       </div>
 
-    {isMounted && (
-      <>
-      <LoginModal
-        isOpen={isLoginOpen}
-        onClose={closeAllModals}
-        // ADD THIS: pass a prop to switch to Sign Up
-        openSignUp={openSignUp}
-      />
-      <SignUpModal
-        isOpen={isSignUpOpen}
-        onClose={closeAllModals}
-        openLogin={openLogin}
-        />
-      </>
-    )}
-  </>
+      {/* Login and Sign Up Modals */}
+      {isMounted && (
+        <>
+          <LoginModal
+            isOpen={isLoginOpen}
+            onClose={closeAllModals}
+            openSignUp={openSignUp}
+          />
+          <SignUpModal
+            isOpen={isSignUpOpen}
+            onClose={closeAllModals}
+            openLogin={openLogin}
+          />
+        </>
+      )}
+    </Layout>
   );
 }
