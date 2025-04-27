@@ -2,7 +2,7 @@ import Link from "next/link";
 
 export default function Sidebar() {
   return (
-    <aside className="w-64 bg-[var(--primary-color)] text-white flex flex-col p-4 rounded-r-2xl">
+    <aside className="w-64 bg-[var(--primary-color)] text-white flex flex-col p-4 rounded-r-2xl min-h-screen">
       {/* Logo placeholder */}
       <div className="mb-8">
         <div className="bg-white rounded-md w-20 h-20 mx-auto mb-4" />
