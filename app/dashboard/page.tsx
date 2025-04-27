@@ -46,54 +46,48 @@ export default function Dashboard() {
       </div>
 
       {/* Main Dashboard Content */}
-      <div className="p-6">
-        <p className="text-lg mb-6">
-          View your learning progress and upcoming assignments.
-        </p>
+      <div className="grid grid-cols-1 gap-6 mt-6">
+        {/* Large Card: School Info */}
+        <div className="p-6 rounded-2xl border shadow bg-card">
+          <h3 className="text-2xl font-semibold mb-4">School Information</h3>
+          <p className="text-muted-foreground mb-2">University of Oklahoma</p>
+          <p className="text-muted-foreground mb-2">President: Joseph Harroz</p>
+          <p className="text-muted-foreground">Number of Teachers: 4,000</p>
 
+          {/* Divider Line */}
+          <hr className="my-4 border-t-2 border-[hsl(var(--primary))] rounded-full" />
+
+          {/* Progress Bar */}
+          <h4 className="text-lg font-semibold mb-2">Semester Progress</h4>
+          <div className="w-full bg-muted rounded-full h-4 mb-2">
+            <div
+              className="bg-[hsl(var(--primary))] h-4 rounded-full"
+              style={{ width: "93.75%" }}
+            ></div>
+          </div>
+          <p className="text-sm text-muted-foreground">
+            93.75% through the current semester (Almost there!)
+          </p>
+        </div>
+
+        {/* Two Smaller Cards in a Row */}
         <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-          {/* Card 1: Current Courses */}
+          {/* Small Card 1: Profile Info */}
           <div className="p-6 rounded-2xl border shadow bg-card">
-            <h3 className="text-xl font-semibold mb-2">Current Courses</h3>
-            <ul className="list-disc list-inside text-muted-foreground">
-              <li>Introduction to Computer Science</li>
-              <li>Advanced Mathematics</li>
-              <li>English Literature</li>
-            </ul>
+            <h3 className="text-xl font-semibold mb-4">Profile Info</h3>
+            <p className="text-muted-foreground mb-2">Mansoor Abdulhaak</p>
+            <p className="text-muted-foreground mb-2">Email: m.hak@ou.edu</p>
+            <p className="text-muted-foreground">Role: Professor</p>
           </div>
 
-          {/* Card 2: Upcoming Assignments */}
+          {/* Small Card 2: Recent Uploads */}
           <div className="p-6 rounded-2xl border shadow bg-card">
-            <h3 className="text-xl font-semibold mb-2">Upcoming Assignments</h3>
+            <h3 className="text-xl font-semibold mb-4">Recent Uploads</h3>
             <ul className="list-disc list-inside text-muted-foreground">
-              <li>CS101 Project - Due Apr 15</li>
-              <li>Math Quiz - Due Apr 10</li>
-              <li>Literature Essay - Due Apr 20</li>
+              <li>Ticket 5: Sprint 2 - Uploaded 3 weeks ago</li>
+              <li>Ticket 4: System Architecture - Uploaded 5 weeks ago</li>
+              <li>Security and Reliability - Uploaded 2 weeks ago</li>
             </ul>
-          </div>
-
-          {/* Card 3: Recent Grades */}
-          <div className="p-6 rounded-2xl border shadow bg-card">
-            <h3 className="text-xl font-semibold mb-2">Recent Grades</h3>
-            <ul className="list-disc list-inside text-muted-foreground">
-              <li>CS101 Midterm - 92%</li>
-              <li>Math Assignment - 88%</li>
-              <li>Literature Discussion - 95%</li>
-            </ul>
-          </div>
-
-          {/* Card 4: Learning Progress */}
-          <div className="p-6 rounded-2xl border shadow bg-card">
-            <h3 className="text-xl font-semibold mb-2">Learning Progress</h3>
-            <div className="w-full bg-muted rounded-full h-4 mb-2">
-              <div
-                className="bg-[hsl(var(--primary))] h-4 rounded-full"
-                style={{ width: "75%" }}
-              ></div>
-            </div>
-            <p className="text-sm text-muted-foreground">
-              Overall completion rate for current semester
-            </p>
           </div>
         </div>
       </div>

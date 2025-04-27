@@ -22,7 +22,7 @@ export default function Sidebar() {
     <div className="flex flex-col gap-6">
       {/* Logo section */}
       <div className="mb-8">
-        <img src="/logo.png" alt="Classification Logo" className="w-28 h-28 mx-auto mb-4" />
+        <img src="/logo.png" alt="Classification Logo" className="w-36 h-36 mx-auto mb-4" />
       </div>
 
       {/* Navigation Links */}
