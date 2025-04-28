@@ -121,6 +121,10 @@ export default function Dashboard() {
             isOpen={isLoginOpen}
             onClose={closeAllModals}
             openSignUp={openSignUp}
+            onLoginSuccess={() => {
+              closeAllModals();
+              window.location.reload();
+            }}
           />
           <SignUpModal
             isOpen={isSignUpOpen}

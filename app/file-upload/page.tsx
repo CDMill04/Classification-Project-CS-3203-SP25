@@ -8,8 +8,12 @@ import { Button } from "@/app/components/ui/button";
 import LoginModal from "@/app/components/modals/loginPage";
 import SignUpModal from "@/app/components/modals/SignUpPage";
 
+import useCurrentUser from "@/app/hooks/useCurrentUser";
+
 export default function FileUpload() {
-  const [user, setUser] = useState<{ name: string; email: string } | null>(null);
+  const { user, setUser, isMounted } = useCurrentUser();  // <-- NEW HOOK
+
+  // const [user, setUser] = useState<{ name: string; email: string } | null>(null);
   const [files, setFiles] = useState<File[]>([]);
   const [uploading, setUploading] = useState(false);
   const [uploadedFiles, setUploadedFiles] = useState<
@@ -22,10 +26,11 @@ export default function FileUpload() {
 
   const [isLoginOpen, setLoginOpen] = useState(false);
   const [isSignUpOpen, setSignUpOpen] = useState(false);
-  const [isMounted, setIsMounted] = useState(false);
+  // const [isMounted, setIsMounted] = useState(false);
 
   const USER_EMAIL = user?.email || ""; // <-- CORRECT: outside, dynamically using user
 
+  /*
   useEffect(() => {
     setIsMounted(true);
 
@@ -35,6 +40,7 @@ export default function FileUpload() {
       setUser(parsedUser);
     }
   }, []);
+  */
 
   // Fetch uploads when user is ready
   useEffect(() => {
