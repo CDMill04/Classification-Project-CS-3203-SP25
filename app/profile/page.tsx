@@ -5,8 +5,10 @@ import Layout from "@/app/components/Layout";
 import { Button } from "@/app/components/ui/button";
 import LoginModal from "@/app/components/modals/loginPage";
 import SignUpModal from "@/app/components/modals/SignUpPage";
+import { useSessionTimeout } from "../hooks/useSessionTimeout";
 
 export default function Profile() {  
+  useSessionTimeout();
   const [isLoginOpen, setLoginOpen] = useState(false);
   const [isSignUpOpen, setSignUpOpen] = useState(false);
   const [isMounted, setIsMounted] = useState(false);

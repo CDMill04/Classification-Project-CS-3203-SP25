@@ -4,6 +4,7 @@ import { useState } from "react";
 import { Input } from "@/app/components/ui/input";   // Import UI
 import { Button } from "@/app/components/ui/button";
 import { X } from "lucide-react";
+import { motion } from "framer-motion";
 
 interface LoginModalProps {   // This is all of our props that are created with this modal
   isOpen: boolean;
@@ -52,7 +53,13 @@ export default function LoginModal({ isOpen, onClose, openSignUp, onLoginSuccess
 
   return (   // UI 
     <div className="fixed inset-0 bg-black/50 flex items-center justify-center z-50">
-      <div className="bg-white p-8 rounded-2xl shadow-lg w-full max-w-md relative">
+      <motion.div
+        initial={{ opacity: 0, y:50 }}
+        animate={{ opacity: 1, y:0 }}
+        exit={{ opacity: 0, y:50 }}
+        transition={{ duration: 0.3 }}
+        className="bg-white p-8 rounded-2xl shadow-lg w-full max-w-md relative"
+      >
         <button
           onClick={onClose}
           className="absolute top-4 right-4 text-gray-500 hover:text-black"
@@ -112,7 +119,7 @@ export default function LoginModal({ isOpen, onClose, openSignUp, onLoginSuccess
             </button>
           </p>
         </div>
-      </div>
+      </motion.div>
     </div>
   );
 }
