@@ -208,7 +208,7 @@ export default function FileUpload() {
             </div>
 
             <div className="upload-section">
-              <h3>Recent Uploads - Can take up to a minute to upload</h3>
+              <h3>Recent Uploads - Can take up to a minute to show changes</h3>
               <table className="uploads-table">
                 <thead>
                   <tr>
