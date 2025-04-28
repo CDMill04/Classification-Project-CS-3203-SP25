@@ -39,7 +39,7 @@ export default function FileUpload() {
   // Fetch uploads when user is ready
   useEffect(() => {
     if (USER_EMAIL) {
-      console.log("Fetching uploads...");
+      console.log("You must log in to see your uploads.");
       fetchUploads();
     }
   }, [USER_EMAIL]); // depend on USER_EMAIL
