@@ -189,6 +189,10 @@ export default function SchoolManagement() {
             isOpen={isLoginOpen}
             onClose={closeAllModals}
             openSignUp={openSignUp}
+            onLoginSuccess={() => {
+              closeAllModals();
+              window.location.reload();
+            }}
           />
           <SignUpModal
             isOpen={isSignUpOpen}
