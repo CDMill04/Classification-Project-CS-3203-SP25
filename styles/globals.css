@@ -87,25 +87,25 @@
   top: 20px;
   right: 20px;
   z-index: 1000;
-  background-color: #f8d7da;
-  color: rgb(46, 135, 24);
+  background-color: hsl(146, 50%, 36%); 
+  color: white;
   padding: 15px;
   margin-bottom: 10px;
   border-radius: 5px;
   display: flex;
-  justify-content: space-between;
-  align-items: center;
+  align-items: center; 
   opacity: 0; /* Initially hidden */
-  transform: translateX(100%); /* Start from off-screen */
+  transform: translateX(100%); /* Start off-screen */
   transition: opacity 0.5s ease, transform 0.5s ease;
 }
 
 .notification .close-btn {
   background: none;
   border: none;
-  color: rgb(0, 0, 0);
-  font-size: 18px;
+  color: black;
+  font-size: 22px;
   cursor: pointer;
+  margin-right: 10px;
 }
 
 .notification.visible {

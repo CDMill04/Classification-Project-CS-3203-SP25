@@ -6,19 +6,20 @@ import { Input } from '@/app/components/ui/input';
 import Layout from '@/app/components/Layout';
 import LoginModal from '@/app/components/modals/loginPage';
 import SignUpModal from '@/app/components/modals/SignUpPage';
+import Notification from "@/app/components/Notification"; // Import Notification
 
 export default function SchoolManagement() {
   const [role, setRole] = useState<'admin' | 'teacher'>('admin');
-
   const [schoolName, setSchoolName] = useState('');
   const [schools, setSchools] = useState<string[]>([]);
-
   const [selectedSchool, setSelectedSchool] = useState<string>('');
   const [joinedSchool, setJoinedSchool] = useState<string | null>(null);
 
   const [isLoginOpen, setLoginOpen] = useState(false);
   const [isSignUpOpen, setSignUpOpen] = useState(false);
   const [isMounted, setIsMounted] = useState(false);
+
+  const [notification, setNotification] = useState<string | null>(null); // Added state for notifications
 
   useEffect(() => {
     setIsMounted(true);
@@ -43,17 +44,20 @@ export default function SchoolManagement() {
     if (schoolName.trim() !== '') {
       setSchools(prev => [...prev, schoolName]);
       setSchoolName('');
+      console.log("School Created:", schoolName);  // Debugging log
+      setNotification("School Successfully Created!");  // Success notification
     }
   };
 
   const handleJoinSchool = () => {
     if (selectedSchool) {
       setJoinedSchool(selectedSchool);
+      setNotification("Successfully joined " + selectedSchool + "!");
     }
   };
 
   const fakeLessonPlans: Record<string, string[]> = {
-    'OU': ['Module 1 - Software Product', 'Module 2 - Agile Software Engineering', 'Module 3 - DevOps and Code Management'] 
+    'OU': ['Module 1 - Software Product', 'Module 2 - Agile Software Engineering', 'Module 3 - DevOps and Code Management']
   };
 
   const lessonPlans = joinedSchool ? fakeLessonPlans[joinedSchool] || [] : [];
@@ -72,7 +76,6 @@ export default function SchoolManagement() {
           Log In
         </Button>
       </div>
-
 
       {/* Main Content */}
       <div className="grid grid-cols-1 gap-6 mt-6">
@@ -180,6 +183,9 @@ export default function SchoolManagement() {
           </div>
         )}
       </div>
+
+      {/* Show Notification */}
+      {notification && <Notification message={notification} onClose={() => setNotification(null)} />}
 
       {/* Login and Sign Up Modals */}
 
