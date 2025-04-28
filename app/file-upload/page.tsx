@@ -39,7 +39,7 @@ export default function FileUpload() {
   // Fetch uploads when user is ready
   useEffect(() => {
     if (USER_EMAIL) {
-      console.log("You must log in to see your uploads.");
+      console.log("Fetching uploads...");
       fetchUploads();
     }
   }, [USER_EMAIL]); // depend on USER_EMAIL
@@ -57,6 +57,7 @@ export default function FileUpload() {
   const closeAllModals = () => {
     setLoginOpen(false);
     setSignUpOpen(false);
+    window.location.reload(); // Reload the page to fetch uploads again
   };
 
   const fetchUploads = async () => {
@@ -167,7 +168,7 @@ export default function FileUpload() {
   </div>
       <div className="p-6 mt-6">
         {loading ? (
-          <p>Loading uploads...</p> // Display a loading message or spinner
+          <p>You must log in to view your uploads.</p> // Display a loading message or spinner
         ) : (
           <>
             <div className="upload-section">
