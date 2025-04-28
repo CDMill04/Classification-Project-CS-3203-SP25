@@ -10,9 +10,21 @@ export default function Dashboard() {
   const [isLoginOpen, setLoginOpen] = useState(false);
   const [isSignUpOpen, setSignUpOpen] = useState(false);
   const [isMounted, setIsMounted] = useState(false);
+  const [logoutMessage, setLogoutMessage] = useState(false);
 
   useEffect(() => {
     setIsMounted(true);
+
+    const success = localStorage.getItem('logoutSuccess');
+    if (success) {
+      setLogoutMessage(true);
+      localStorage.removeItem('logoutSuccess'); // Clear flag immediately
+
+      // Auto-hide the message after 3 seconds
+      setTimeout(() => {
+        setLogoutMessage(false);
+      }, 3000);
+    }
   }, []);
 
   const openLogin = () => {
@@ -44,6 +56,13 @@ export default function Dashboard() {
           Log In
         </Button>
       </div>
+
+      {/* Success Message */}
+      {logoutMessage && (
+        <div className="p-4 bg-green-100 text-green-800 text-center rounded-lg mt-6 mx-4">
+          Logout successful!
+        </div>
+      )}
 
       {/* Main Dashboard Content */}
       <div className="grid grid-cols-1 gap-6 mt-6">
