@@ -84,9 +84,10 @@ export default function Dashboard() {
           <div className="p-6 rounded-2xl border shadow bg-card">
             <h3 className="text-xl font-semibold mb-4">Recent Uploads</h3>
             <ul className="list-disc list-inside text-muted-foreground">
-              <li>Ticket 5: Sprint 2 - Uploaded 3 weeks ago</li>
-              <li>Ticket 4: System Architecture - Uploaded 5 weeks ago</li>
-              <li>Security and Reliability - Uploaded 2 weeks ago</li>
+              <li>Ticket 5: Sprint 2 - Uploaded 2 weeks ago</li>
+              <li>Ticket 4: System Architecture - Uploaded 3 weeks ago</li>
+              <li>Security and Reliability - Uploaded 4 weeks ago</li>
+              <li>User Stories - Uploaded 8 weeks ago</li>
             </ul>
           </div>
         </div>

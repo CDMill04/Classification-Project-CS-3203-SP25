@@ -16,7 +16,7 @@ export default function Sidebar() {
     return null; // Wait for client-side render
   }
 
-  const isActive = (path: string) => pathname === path;
+  const isActive = (path: string) => pathname.startsWith(path);
 
   return (
     <div className="flex flex-col gap-6">
@@ -29,7 +29,7 @@ export default function Sidebar() {
       <nav className="flex flex-col gap-2">
         {[
           { href: "/dashboard", label: "Dashboard" },
-          { href: "/upload", label: "Upload" },
+          { href: "/file-upload", label: "Upload" },
           { href: "/review", label: "Review" },
           { href: "/profile", label: "Profile" },
           { href: "/school", label: "School" },
