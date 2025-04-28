@@ -5,6 +5,11 @@ const USER_EMAIL = "userEmail@example.com";
 import { useState, useEffect } from "react";
 import { uploadToBlob, fetchUserUploads, updateUserUploads, updateUploadStatus } from "./actions";
 
+import Layout from "@/app/components/Layout";
+import { Button } from "@/app/components/ui/button";
+import LoginModal from "@/app/components/modals/loginPage";
+import SignUpModal from "@/app/components/modals/SignUpPage";
+
 export default function FileUpload() {
   const [files, setFiles] = useState<File[]>([]);
   const [uploading, setUploading] = useState(false);
@@ -15,6 +20,29 @@ export default function FileUpload() {
   const [error, setError] = useState("");
   const [uploadSuccess, setUploadSuccess] = useState(false);
   const [loading, setLoading] = useState(true);
+
+  const [isLoginOpen, setLoginOpen] = useState(false);
+  const [isSignUpOpen, setSignUpOpen] = useState(false);
+  const [isMounted, setIsMounted] = useState(false);
+
+  useEffect(() => {
+    setIsMounted(true);
+  }, []);
+
+  const openLogin = () => {
+    setLoginOpen(true);
+    setSignUpOpen(false);
+  };
+
+  const openSignUp = () => {
+    setLoginOpen(false);
+    setSignUpOpen(true);
+  };
+
+  const closeAllModals = () => {
+    setLoginOpen(false);
+    setSignUpOpen(false);
+  };
 
   // Fetch the user's uploads
   const fetchUploads = async () => {
@@ -128,99 +156,106 @@ export default function FileUpload() {
   };
 
   return (
-    <>
-      <h2>File Upload Center</h2>
-      <p>Upload lesson plan files.</p>
-
-      {loading ? (
-        <p>Loading uploads...</p> // Display a loading message or spinner
-      ) : (
-        <>
-          <div className="upload-section">
-            <h3>Upload New File</h3>
-            {error && <div className="error-message">{error}</div>}
-            {uploadSuccess && (
-              <div className="success-message">Files uploaded successfully!</div>
-            )}
-            <form onSubmit={handleSubmit}>
-              <div className="form-group">
-                <label>Semester:</label>
-                <select
-                  value={semester}
-                  onChange={(e) => setSemester(e.target.value)}
-                  required
+    <Layout>
+      <div className="sticky top-0 z-20 flex justify-between items-center p-4 bg-background border-b">
+        <h2 className="text-2xl font-bold">File Upload Center</h2>
+        <Button
+          onClick={openLogin}
+          className="bg-[hsl(var(--primary))] text-white hover:opacity-90 rounded-lg"
+        >
+          Log In
+        </Button>
+  </div>
+      <div className="p-6 mt-6">
+        {loading ? (
+          <p>Loading uploads...</p> // Display a loading message or spinner
+        ) : (
+          <>
+            <div className="upload-section">
+              <h3>Upload New File</h3>
+              {error && <div className="error-message">{error}</div>}
+              {uploadSuccess && (
+                <div className="success-message">Files uploaded successfully!</div>
+              )}
+              <form onSubmit={handleSubmit}>
+                <div className="form-group">
+                  <label>Semester:</label>
+                  <select
+                    value={semester}
+                    onChange={(e) => setSemester(e.target.value)}
+                    required
+                  >
+                    <option value="">Select a semester</option>
+                    <option value="Spring">Spring</option>
+                    <option value="Fall">Fall</option>
+                  </select>
+                </div>
+                <div className="form-group">
+                  <label>Select File:</label>
+                  <input type="file" multiple onChange={handleFileChange} required />
+                  <p className="file-hint">
+                    Accepted formats: PDF, DOCX (Max size: 50MB)
+                  </p>
+                </div>
+                <button
+                  type="submit"
+                  disabled={uploading}
+                  className={uploading ? "uploading" : ""}
                 >
-                  <option value="">Select a semester</option>
-                  <option value="Spring">Spring</option>
-                  <option value="Fall">Fall</option>
-                </select>
-              </div>
-              <div className="form-group">
-                <label>Select File:</label>
-                <input type="file" multiple onChange={handleFileChange} required />
-                <p className="file-hint">
-                  Accepted formats: PDF, DOCX (Max size: 50MB)
-                </p>
-              </div>
-              <button
-                type="submit"
-                disabled={uploading}
-                className={uploading ? "uploading" : ""}
-              >
-                {uploading ? "Uploading..." : "Upload Files"}
-              </button>
-            </form>
-          </div>
+                  {uploading ? "Uploading..." : "Upload Files"}
+                </button>
+              </form>
+            </div>
 
-          <div className="upload-section">
-            <h3>Recent Uploads - Can take up to a minute to upload</h3>
-            <table className="uploads-table">
-              <thead>
-                <tr>
-                  <th>Date</th>
-                  <th>Filename</th>
-                  <th>Semester</th>
-                  <th>Status</th>
-                  <th>Actions</th>
-                </tr>
-              </thead>
-              <tbody>
-                {uploadedFiles.map((file, index) => (
-                  <tr key={index}>
-                    <td>{file.date}</td>
-                    <td>
-                      <a
-                        href={file.url}
-                        target="_blank"
-                        rel="noopener noreferrer"
-                      >
-                        {file.filename}
-                      </a>
-                    </td>
-                    <td>{file.semester}</td>
-                    <td className={`status-${file.status.toLowerCase()}`}>
-                      {file.status}
-                    </td>
-                    <td>
-                      <button
-                        className="action-link approve"
-                        onClick={() => handleStatusChange(index, "Approved")}
-                      >
-                        Approve
-                      </button>
-                      <button
-                        className="action-link disapprove"
-                        onClick={() => handleStatusChange(index, "Disapproved")}
-                      >
-                        Disapprove
-                      </button>
-                    </td>
+            <div className="upload-section">
+              <h3>Recent Uploads - Can take up to a minute to upload</h3>
+              <table className="uploads-table">
+                <thead>
+                  <tr>
+                    <th>Date</th>
+                    <th>Filename</th>
+                    <th>Semester</th>
+                    <th>Status</th>
+                    <th>Actions</th>
                   </tr>
-                ))}
-              </tbody>
-            </table>
-          </div>
-        </>
+                </thead>
+                <tbody>
+                  {uploadedFiles.map((file, index) => (
+                    <tr key={index}>
+                      <td>{file.date}</td>
+                      <td>
+                        <a
+                          href={file.url}
+                          target="_blank"
+                          rel="noopener noreferrer"
+                        >
+                          {file.filename}
+                        </a>
+                      </td>
+                      <td>{file.semester}</td>
+                      <td className={`status-${file.status.toLowerCase()}`}>
+                        {file.status}
+                      </td>
+                      <td>
+                        <button
+                          className="action-link approve"
+                          onClick={() => handleStatusChange(index, "Approved")}
+                        >
+                          Approve
+                        </button>
+                        <button
+                          className="action-link disapprove"
+                          onClick={() => handleStatusChange(index, "Disapproved")}
+                        >
+                          Disapprove
+                        </button>
+                      </td>
+                    </tr>
+                  ))}
+                </tbody>
+              </table>
+            </div>
+          </>
       )}
       <style jsx>{`
         .upload-section {
@@ -385,6 +420,22 @@ export default function FileUpload() {
           background-color: #2980b9;
         }
       `}</style>
-    </>
+      </div>
+      {/* Modals */}
+      {isMounted && (
+        <>
+          <LoginModal
+            isOpen={isLoginOpen}
+            onClose={closeAllModals}
+            openSignUp={openSignUp}
+          />
+          <SignUpModal
+            isOpen={isSignUpOpen}
+            onClose={closeAllModals}
+            openLogin={openLogin}
+          />
+        </>
+      )}
+    </Layout>
   )
 }
