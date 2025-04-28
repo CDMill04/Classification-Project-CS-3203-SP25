@@ -3,7 +3,7 @@
 const USER_EMAIL = "userEmail@example.com";
 
 import { useState, useEffect } from "react";
-import { uploadToBlob, fetchUserUploads, updateUserUploads, updateUploadStatus } from "./actions";
+import { uploadToBlob, fetchUserUploads, updateUserUploads, updateFileStatus } from "./actions";
 
 import Layout from "@/app/components/Layout";
 import { Button } from "@/app/components/ui/button";
@@ -74,7 +74,7 @@ export default function FileUpload() {
       fileToUpdate.status = newStatus;
   
       // Call the new function to update the status in Vercel Blob
-      await updateUploadStatus(USER_EMAIL, fileToUpdate.filename, newStatus);
+      await updateFileStatus(USER_EMAIL, fileToUpdate.filename, newStatus);
   
       // Update the state
       setUploadedFiles(updatedFiles);
@@ -116,7 +116,7 @@ export default function FileUpload() {
         formData.append("file", file);
         formData.append("semester", semester);
 
-        const result = await uploadToBlob(formData);
+        const result = await uploadToBlob(formData, USER_EMAIL);
 
         if (!result.success) {
           throw new Error(result.error || "Upload failed");
