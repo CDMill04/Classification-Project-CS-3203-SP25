@@ -73,6 +73,7 @@ export default function SchoolManagement() {
         </Button>
       </div>
 
+
       {/* Main Content */}
       <div className="grid grid-cols-1 gap-6 mt-6">
         {/* Role Simulator */}
@@ -181,6 +182,7 @@ export default function SchoolManagement() {
       </div>
 
       {/* Login and Sign Up Modals */}
+
       {isMounted && (
         <>
           <LoginModal
