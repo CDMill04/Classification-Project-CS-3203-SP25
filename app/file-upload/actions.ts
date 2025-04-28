@@ -1,4 +1,4 @@
-/*
+/* Code for uploading files to Vercel Blob for when we transfer to Vercel Server Hosting
 "use server";
 
 import { put } from "@vercel/blob";
