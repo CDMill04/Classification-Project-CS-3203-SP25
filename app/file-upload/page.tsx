@@ -57,7 +57,6 @@ export default function FileUpload() {
   const closeAllModals = () => {
     setLoginOpen(false);
     setSignUpOpen(false);
-    window.location.reload(); // Reload the page to fetch uploads again
   };
 
   const fetchUploads = async () => {
@@ -192,9 +191,14 @@ export default function FileUpload() {
                 </div>
                 <div className="form-group">
                   <label>Select File:</label>
-                  <input type="file" multiple onChange={handleFileChange} required />
+                  <input 
+                    type="file" 
+                    accept="application/pdf"
+                    multiple 
+                    onChange={handleFileChange} 
+                    required />
                   <p className="file-hint">
-                    Accepted formats: PDF, DOCX (Max size: 50MB)
+                    Accepted formats: PDF (Max size: 50MB)
                   </p>
                 </div>
                 <button
@@ -208,7 +212,7 @@ export default function FileUpload() {
             </div>
 
             <div className="upload-section">
-              <h3>Recent Uploads - Can take up to a minute to upload</h3>
+              <h3>Recent Uploads - Can take up to a minute to show changes</h3>
               <table className="uploads-table">
                 <thead>
                   <tr>
@@ -428,6 +432,10 @@ export default function FileUpload() {
             isOpen={isLoginOpen}
             onClose={closeAllModals}
             openSignUp={openSignUp}
+            onLoginSuccess={() => {
+              closeAllModals();
+              window.location.reload(); // Reload to fetch uploads
+            }}
           />
           <SignUpModal
             isOpen={isSignUpOpen}

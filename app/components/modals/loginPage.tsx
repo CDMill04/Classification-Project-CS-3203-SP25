@@ -10,9 +10,10 @@ interface LoginModalProps {   // This is all of our props that are created with 
   isOpen: boolean;
   onClose: () => void;
   openSignUp: () => void;
+  onLoginSuccess: () => void;  // This is the function that will be called when the user successfully logs in
 }
 
-export default function LoginModal({ isOpen, onClose, openSignUp }: LoginModalProps) {  // Prepare to recieve email and password
+export default function LoginModal({ isOpen, onClose, openSignUp, onLoginSuccess }: LoginModalProps) {  // Prepare to recieve email and password
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
   const [error, setError] = useState('');    // Prep errors
@@ -37,6 +38,7 @@ export default function LoginModal({ isOpen, onClose, openSignUp }: LoginModalPr
         console.log("Login successful for:", foundUser.name);
         localStorage.setItem('user', JSON.stringify(foundUser));
         onClose();
+        onLoginSuccess();   // Call the function to update the UI
         // We could also optionally reload the page here if needed
       } else {
         setError("Invalid email or password.");  // Catch errors
