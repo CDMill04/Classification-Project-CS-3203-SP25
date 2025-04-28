@@ -9,7 +9,7 @@ export default function FileUpload() {
   const [files, setFiles] = useState<File[]>([]);
   const [uploading, setUploading] = useState(false);
   const [uploadedFiles, setUploadedFiles] = useState<
-    { date: string; filename: string; semester: string; status: string }[]
+    { date: string; filename: string; semester: string; status: string; url: string }[]
   >([]);
   const [semester, setSemester] = useState("");
   const [error, setError] = useState("");
@@ -100,7 +100,7 @@ export default function FileUpload() {
           filename: file.name,
           semester,
           status: "Pending",
-          url: result.url,
+          url: result.url || "",
         };
 
         // Update the local state immediately
