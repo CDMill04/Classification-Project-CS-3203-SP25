@@ -1,263 +1,262 @@
-"use client"
+"use client";
 
-import type React from "react"
+const USER_EMAIL = "userEmail@example.com";
 
-import { useState } from "react"
-import { uploadToBlob } from "./actions"
+import { useState, useEffect } from "react";
+import { uploadToBlob, fetchUserUploads, updateUserUploads, updateFileStatus } from "./actions";
+
+import Layout from "@/app/components/Layout";
+import { Button } from "@/app/components/ui/button";
+import LoginModal from "@/app/components/modals/loginPage";
+import SignUpModal from "@/app/components/modals/SignUpPage";
 
 export default function FileUpload() {
-  const [files, setFiles] = useState<File[]>([])
-  const [uploading, setUploading] = useState(false)
+  const [files, setFiles] = useState<File[]>([]);
+  const [uploading, setUploading] = useState(false);
   const [uploadedFiles, setUploadedFiles] = useState<
-    { name: string; url: string; course: string; assignment: string }[]
-  >([])
-  const [course, setCourse] = useState("")
-  const [assignment, setAssignment] = useState("")
-  const [fileType, setFileType] = useState("")
-  const [description, setDescription] = useState("")
-  const [error, setError] = useState("")
-  const [uploadSuccess, setUploadSuccess] = useState(false)
+    { date: string; filename: string; semester: string; status: string; url: string }[]
+  >([]);
+  const [semester, setSemester] = useState("");
+  const [error, setError] = useState("");
+  const [uploadSuccess, setUploadSuccess] = useState(false);
+  const [loading, setLoading] = useState(true);
+
+  const [isLoginOpen, setLoginOpen] = useState(false);
+  const [isSignUpOpen, setSignUpOpen] = useState(false);
+  const [isMounted, setIsMounted] = useState(false);
+
+  useEffect(() => {
+    setIsMounted(true);
+  }, []);
+
+  const openLogin = () => {
+    setLoginOpen(true);
+    setSignUpOpen(false);
+  };
+
+  const openSignUp = () => {
+    setLoginOpen(false);
+    setSignUpOpen(true);
+  };
+
+  const closeAllModals = () => {
+    setLoginOpen(false);
+    setSignUpOpen(false);
+  };
+
+  // Fetch the user's uploads
+  const fetchUploads = async () => {
+    try {
+      setLoading(true); // Start loading
+      const uploads = await fetchUserUploads(USER_EMAIL);
+      console.log("Fetched uploads:", uploads); // Debugging line
+      setUploadedFiles(uploads);
+    } catch (error) {
+      console.error("Error in fetchUploads:", error);
+    } finally {
+      setLoading(false); // Stop loading
+    }
+  };
+
+  // Trigger fetchUploads on mount
+  useEffect(() => {
+    console.log("Fetching uploads...");
+    fetchUploads();
+  }, []);
+
+  // Handle status update
+  const handleStatusChange = async (index: number, newStatus: string) => {
+    try {
+      const updatedFiles = [...uploadedFiles];
+      const fileToUpdate = updatedFiles[index];
+  
+      // Update the status locally
+      fileToUpdate.status = newStatus;
+  
+      // Call the new function to update the status in Vercel Blob
+      await updateFileStatus(USER_EMAIL, fileToUpdate.filename, newStatus);
+  
+      // Update the state
+      setUploadedFiles(updatedFiles);
+      console.log("Status updated successfully:", fileToUpdate);
+    } catch (error) {
+      console.error("Error updating status:", error);
+      setError("Failed to update status. Please try again.");
+    }
+  };
 
   const handleFileChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     if (e.target.files) {
-      setFiles(Array.from(e.target.files))
-      setError("")
-      setUploadSuccess(false)
+      setFiles(Array.from(e.target.files));
+      setError("");
+      setUploadSuccess(false);
     }
-  }
+  };
 
   const handleSubmit = async (e: React.FormEvent) => {
-    e.preventDefault()
+    e.preventDefault();
 
     if (files.length === 0) {
-      setError("Please select at least one file to upload")
-      return
+      setError("Please select at least one file to upload");
+      return;
     }
 
-    if (!course || !assignment || !fileType) {
-      setError("Please fill out all required fields")
-      return
+    if (!semester) {
+      setError("Please fill out semester");
+      return;
     }
 
-    setUploading(true)
-    setError("")
-    setUploadSuccess(false)
+    setUploading(true);
+    setError("");
+    setUploadSuccess(false);
 
     try {
       const uploadPromises = files.map(async (file) => {
-        const formData = new FormData()
-        formData.append("file", file)
-        formData.append("course", course)
-        formData.append("assignment", assignment)
-        formData.append("fileType", fileType)
-        formData.append("description", description)
+        const formData = new FormData();
+        formData.append("file", file);
+        formData.append("semester", semester);
 
-        const result = await uploadToBlob(formData)
+        const result = await uploadToBlob(formData, USER_EMAIL);
 
         if (!result.success) {
-          throw new Error(result.error || "Upload failed")
+          throw new Error(result.error || "Upload failed");
         }
 
-        return {
-          name: file.name,
-          url: result.url,
-          course,
-          assignment,
-        }
-      })
+        // Add the new file data to the user's JSON file
+        const newUpload = {
+          date: new Date().toISOString().split("T")[0], // Current date in YYYY-MM-DD format
+          filename: file.name,
+          semester,
+          status: "Pending",
+          url: result.url || "",
+        };
 
-      const results = await Promise.all(uploadPromises)
+        // Update the local state immediately
+        setUploadedFiles((prev) => [newUpload, ...prev]);
 
-      setUploadedFiles((prev) => [...results, ...prev])
-      setFiles([])
-      setUploadSuccess(true)
+        // Update the JSON file in Vercel Blob
+        await updateUserUploads(USER_EMAIL, newUpload);
 
-      // Keep the form values for convenience if uploading multiple batches
-      // setCourse('')
-      // setAssignment('')
-      // setFileType('')
-      // setDescription('')
+        return newUpload;
+      });
+
+      await Promise.all(uploadPromises);
+
+      setFiles([]);
+      setUploadSuccess(true);
     } catch (err) {
-      console.error("Upload error:", err)
-      setError("An error occurred during upload: " + (err instanceof Error ? err.message : "Unknown error"))
+      console.error("Upload error:", err);
+      setError(
+        "An error occurred during upload: " +
+          (err instanceof Error ? err.message : "Unknown error")
+      );
     } finally {
-      setUploading(false)
+      setUploading(false);
     }
-  }
-
-  // Generate current date in YYYY-MM-DD format
-  const getCurrentDate = () => {
-    const now = new Date()
-    return now.toISOString().split("T")[0]
-  }
+  };
 
   return (
-    <>
-      <h2>File Upload Center</h2>
-      <p>Upload assignments, projects, and other documents to your courses.</p>
+    <Layout>
+      <div className="sticky top-0 z-20 flex justify-between items-center p-4 bg-background border-b">
+        <h2 className="text-2xl font-bold">File Upload Center</h2>
+        <Button
+          onClick={openLogin}
+          className="bg-[hsl(var(--primary))] text-white hover:opacity-90 rounded-lg"
+        >
+          Log In
+        </Button>
+  </div>
+      <div className="p-6 mt-6">
+        {loading ? (
+          <p>Loading uploads...</p> // Display a loading message or spinner
+        ) : (
+          <>
+            <div className="upload-section">
+              <h3>Upload New File</h3>
+              {error && <div className="error-message">{error}</div>}
+              {uploadSuccess && (
+                <div className="success-message">Files uploaded successfully!</div>
+              )}
+              <form onSubmit={handleSubmit}>
+                <div className="form-group">
+                  <label>Semester:</label>
+                  <select
+                    value={semester}
+                    onChange={(e) => setSemester(e.target.value)}
+                    required
+                  >
+                    <option value="">Select a semester</option>
+                    <option value="Spring">Spring</option>
+                    <option value="Fall">Fall</option>
+                  </select>
+                </div>
+                <div className="form-group">
+                  <label>Select File:</label>
+                  <input type="file" multiple onChange={handleFileChange} required />
+                  <p className="file-hint">
+                    Accepted formats: PDF, DOCX (Max size: 50MB)
+                  </p>
+                </div>
+                <button
+                  type="submit"
+                  disabled={uploading}
+                  className={uploading ? "uploading" : ""}
+                >
+                  {uploading ? "Uploading..." : "Upload Files"}
+                </button>
+              </form>
+            </div>
 
-      <div className="upload-section">
-        <h3>Upload New File</h3>
-        {error && <div className="error-message">{error}</div>}
-        {uploadSuccess && <div className="success-message">Files uploaded successfully!</div>}
-        <form onSubmit={handleSubmit}>
-          <div className="form-group">
-            <label>Course:</label>
-            <select value={course} onChange={(e) => setCourse(e.target.value)} required>
-              <option value="">Select a course</option>
-              <option value="Introduction to Computer Science">Introduction to Computer Science</option>
-              <option value="Advanced Mathematics">Advanced Mathematics</option>
-              <option value="English Literature">English Literature</option>
-            </select>
-          </div>
-          <div className="form-group">
-            <label>Assignment:</label>
-            <select value={assignment} onChange={(e) => setAssignment(e.target.value)} required>
-              <option value="">Select an assignment</option>
-              <option value="Homework #3">Homework #3</option>
-              <option value="Term Paper">Term Paper</option>
-              <option value="Final Project">Final Project</option>
-              <option value="Other">Other</option>
-            </select>
-          </div>
-          <div className="form-group">
-            <label>File Type:</label>
-            <select value={fileType} onChange={(e) => setFileType(e.target.value)} required>
-              <option value="">Select file type</option>
-              <option value="Assignment Submission">Assignment Submission</option>
-              <option value="Project Documentation">Project Documentation</option>
-              <option value="Supplementary Material">Supplementary Material</option>
-              <option value="Other">Other</option>
-            </select>
-          </div>
-          <div className="form-group">
-            <label>Select File:</label>
-            <input type="file" multiple onChange={handleFileChange} required />
-            <p className="file-hint">Accepted formats: PDF, DOCX, PPTX, ZIP (Max size: 50MB)</p>
-          </div>
-          <div className="form-group">
-            <label>Description:</label>
-            <textarea
-              rows={3}
-              placeholder="Brief description of the uploaded file(s)..."
-              value={description}
-              onChange={(e) => setDescription(e.target.value)}
-            ></textarea>
-          </div>
-          <button type="submit" disabled={uploading} className={uploading ? "uploading" : ""}>
-            {uploading ? "Uploading..." : "Upload Files"}
-          </button>
-        </form>
-      </div>
-
-      <div className="upload-section">
-        <h3>Recent Uploads</h3>
-        <table className="uploads-table">
-          <thead>
-            <tr>
-              <th>Date</th>
-              <th>Filename</th>
-              <th>Course</th>
-              <th>Assignment</th>
-              <th>Status</th>
-              <th>Actions</th>
-            </tr>
-          </thead>
-          <tbody>
-            {uploadedFiles.map((file, index) => (
-              <tr key={index}>
-                <td>{getCurrentDate()}</td>
-                <td>{file.name}</td>
-                <td>{file.course}</td>
-                <td>{file.assignment}</td>
-                <td>
-                  <span className="status-pending">Pending Review</span>
-                </td>
-                <td>
-                  <a href={file.url} target="_blank" rel="noopener noreferrer" className="action-link">
-                    View
-                  </a>{" "}
-                  |
-                  <a href="#" className="action-link">
-                    Replace
-                  </a>{" "}
-                  |
-                  <a href="#" className="action-link">
-                    Delete
-                  </a>
-                </td>
-              </tr>
-            ))}
-            {uploadedFiles.length === 0 && (
-              <>
-                <tr>
-                  <td>Apr 2, 2025</td>
-                  <td>final-project.pdf</td>
-                  <td>Computer Science</td>
-                  <td>Final Project</td>
-                  <td>
-                    <span className="status-pending">Pending Review</span>
-                  </td>
-                  <td>
-                    <a href="#" className="action-link">
-                      View
-                    </a>{" "}
-                    |
-                    <a href="#" className="action-link">
-                      Replace
-                    </a>{" "}
-                    |
-                    <a href="#" className="action-link">
-                      Delete
-                    </a>
-                  </td>
-                </tr>
-                <tr>
-                  <td>Mar 28, 2025</td>
-                  <td>math-homework3.docx</td>
-                  <td>Advanced Mathematics</td>
-                  <td>Homework #3</td>
-                  <td>
-                    <span className="status-approved">Approved</span>
-                  </td>
-                  <td>
-                    <a href="#" className="action-link">
-                      View
-                    </a>{" "}
-                    |
-                    <a href="#" className="action-link">
-                      Replace
-                    </a>{" "}
-                    |
-                    <a href="#" className="action-link">
-                      Delete
-                    </a>
-                  </td>
-                </tr>
-                <tr>
-                  <td>Mar 15, 2025</td>
-                  <td>literature-essay.docx</td>
-                  <td>English Literature</td>
-                  <td>Term Paper</td>
-                  <td>
-                    <span className="status-graded">Graded: A-</span>
-                  </td>
-                  <td>
-                    <a href="#" className="action-link">
-                      View
-                    </a>{" "}
-                    |
-                    <a href="#" className="action-link">
-                      Download
-                    </a>
-                  </td>
-                </tr>
-              </>
-            )}
-          </tbody>
-        </table>
-      </div>
-
+            <div className="upload-section">
+              <h3>Recent Uploads - Can take up to a minute to upload</h3>
+              <table className="uploads-table">
+                <thead>
+                  <tr>
+                    <th>Date</th>
+                    <th>Filename</th>
+                    <th>Semester</th>
+                    <th>Status</th>
+                    <th>Actions</th>
+                  </tr>
+                </thead>
+                <tbody>
+                  {uploadedFiles.map((file, index) => (
+                    <tr key={index}>
+                      <td>{file.date}</td>
+                      <td>
+                        <a
+                          href={file.url}
+                          target="_blank"
+                          rel="noopener noreferrer"
+                        >
+                          {file.filename}
+                        </a>
+                      </td>
+                      <td>{file.semester}</td>
+                      <td className={`status-${file.status.toLowerCase()}`}>
+                        {file.status}
+                      </td>
+                      <td>
+                        <button
+                          className="action-link approve"
+                          onClick={() => handleStatusChange(index, "Approved")}
+                        >
+                          Approve
+                        </button>
+                        <button
+                          className="action-link disapprove"
+                          onClick={() => handleStatusChange(index, "Disapproved")}
+                        >
+                          Disapprove
+                        </button>
+                      </td>
+                    </tr>
+                  ))}
+                </tbody>
+              </table>
+            </div>
+          </>
+      )}
       <style jsx>{`
         .upload-section {
           background-color: #f8f9fa;
@@ -265,6 +264,15 @@ export default function FileUpload() {
           padding: 1.5rem;
           margin-bottom: 1.5rem;
           box-shadow: 0 2px 5px rgba(0, 0, 0, 0.05);
+        }
+        
+        .uploads-table a {
+          color: #007bff; /* Blue color for the link */
+          text-decoration: none; /* Remove underline */
+        }
+
+        .uploads-table a:hover {
+          text-decoration: underline; /* Add underline on hover */
         }
         
         .file-hint {
@@ -312,21 +320,50 @@ export default function FileUpload() {
           color: #27ae60;
           font-weight: bold;
         }
-        
-        .status-graded {
-          color: #3498db;
+
+        .status-disapproved {
+          color: #e74c3c;
           font-weight: bold;
         }
         
         .action-link {
-          color: #3498db;
-          text-decoration: none;
-          margin: 0 5px;
+          display: inline-block;
+          padding: 0.25rem 0.5rem; /* Adjust padding for smaller buttons */
+          font-size: 0.9rem; /* Reduce font size */
+          border: 1px solid transparent; /* Add a border for better visibility */
+          border-radius: 4px; /* Rounded corners */
           cursor: pointer;
+          margin: 0 5px; /* Add spacing between buttons */
+          text-align: center;
+          text-decoration: none;
+          transition: background-color 0.3s, color 0.3s;
         }
-        
-        .action-link:hover {
-          text-decoration: underline;
+
+        .action-link.approve {
+          background-color: #28a745; /* Green background */
+          color: white; /* White text */
+          border-color: #28a745; /* Green border */
+        }
+
+        .action-link.approve:hover {
+          background-color: #218838; /* Darker green on hover */
+          border-color: #1e7e34;
+        }
+
+        .action-link.disapprove {
+          background-color: #dc3545; /* Red background */
+          color: white; /* White text */
+          border-color: #dc3545; /* Red border */
+        }
+
+        .action-link.disapprove:hover {
+          background-color: #c82333; /* Darker red on hover */
+          border-color: #bd2130;
+        }
+
+        .action-link:focus {
+          outline: none; /* Remove default focus outline */
+          box-shadow: 0 0 0 3px rgba(0, 123, 255, 0.25); /* Add custom focus outline */
         }
 
         .error-message {
@@ -383,7 +420,22 @@ export default function FileUpload() {
           background-color: #2980b9;
         }
       `}</style>
-    </>
+      </div>
+      {/* Modals */}
+      {isMounted && (
+        <>
+          <LoginModal
+            isOpen={isLoginOpen}
+            onClose={closeAllModals}
+            openSignUp={openSignUp}
+          />
+          <SignUpModal
+            isOpen={isSignUpOpen}
+            onClose={closeAllModals}
+            openLogin={openLogin}
+          />
+        </>
+      )}
+    </Layout>
   )
 }
-
