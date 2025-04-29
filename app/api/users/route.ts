@@ -14,7 +14,7 @@ export async function GET() {
 
 // POST wil create new users and store them in that file
 export async function POST(req: Request) {
-  const { name, email, password } = await req.json();
+  const { name, email, password, role } = await req.json();
 
   const file = await fs.readFile(filePath, 'utf-8');
   const users = JSON.parse(file);
@@ -24,7 +24,7 @@ export async function POST(req: Request) {
     return NextResponse.json({ error: "User already exists" }, { status: 400 });
   }
 
-  const newUser = { id: Date.now(), name, email, password };
+  const newUser = { id: Date.now(), name, email, password, role, };
   users.push(newUser);
 
   await fs.writeFile(filePath, JSON.stringify(users, null, 2));
