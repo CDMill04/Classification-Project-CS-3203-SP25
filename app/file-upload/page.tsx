@@ -9,6 +9,16 @@ import LoginModal from "@/app/components/modals/loginPage";
 import SignUpModal from "@/app/components/modals/SignUpPage";
 
 import useCurrentUser from "@/app/hooks/useCurrentUser";
+import users from "@/app/data/users.json"; // Assuming you have a JSON file with user data
+
+const sanitizeFilename = (name: string) => {
+  const safeName = name
+    .replace(/[^a-zA-Z0-9.\-_]/g, '_')    // Allow only safe characters
+    .replace(/\.+/g, '.')                 // Replace multiple dots with one dot
+    .replace(/^\.*/, '')                  // Remove leading dots
+    .replace(/_*$/, '');                  // Remove trailing underscores
+  return safeName.length > 100 ? safeName.slice(0, 100) : safeName; // Limit filename length
+};
 
 import { OriginGuard } from "@/app/OriginGuard";
 export default function FileUploadPage() {
@@ -39,12 +49,19 @@ export function FileUpload() {
   const [error, setError] = useState("");
   const [uploadSuccess, setUploadSuccess] = useState(false);
   const [loading, setLoading] = useState(true);
+  const [isTeacher, setIsTeacher] = useState(true);
 
   const [isLoginOpen, setLoginOpen] = useState(false);
   const [isSignUpOpen, setSignUpOpen] = useState(false);
   // const [isMounted, setIsMounted] = useState(false);
 
   const USER_EMAIL = user?.email || ""; // <-- CORRECT: outside, dynamically using user
+  function getRoleByEmail(USER_EMAIL: string) {
+    const user = users.find(u => u.email === USER_EMAIL);
+    return user ? user.role : null;
+  }
+
+  const USER_ROLE = getRoleByEmail(USER_EMAIL); // <-- CORRECT: outside, dynamically using user
 
   /*
   useEffect(() => {
@@ -61,6 +78,9 @@ export function FileUpload() {
   // Fetch uploads when user is ready
   useEffect(() => {
     if (USER_EMAIL) {
+      if (getRoleByEmail(USER_EMAIL) === "Admin") {
+        setIsTeacher(false);
+      }
       console.log("Fetching uploads...");
       fetchUploads();
     }
@@ -150,7 +170,7 @@ export function FileUpload() {
 
         const newUpload = {
           date: new Date().toISOString().split("T")[0],
-          filename: file.name,
+          filename: sanitizeFilename(file.name),
           semester,
           status: "Pending",
           url: result.url || "",
@@ -189,7 +209,27 @@ export function FileUpload() {
   </div>
       <div className="p-6 mt-6">
         {loading ? (
-          <p>You must log in to view your uploads.</p> // Display a loading message or spinner
+          <div className="flex flex-1 flex-col items-center justify-start text-center px-8 pt-16 h-[calc(100vh-64px)]">
+          <img 
+            src="/broken_pencil.png" 
+            alt="Broken Pencil" 
+            className="w-64 h-64 mb-6 object-contain" 
+          />
+          <p className="text-2xl font-semibold text-muted-foreground">
+            Oops! You must be logged in to view your uploads.
+          </p>
+        </div>
+        ) : !isTeacher ? (
+          <div className = "flex flex-col items-center justify-center text-center px-9 pt-16 h-[calc(100vh-64px)]">
+            <img 
+              src="/sad3.webp"
+              alt="Admin"
+              className="w-64 h-64 mb-6 object-contain"
+            />
+            <p className="text-2xl font-semibold text-muted-foreground">
+              You are logged in as an Admin. Wait for the admin view feature to be implemented.
+            </p>
+          </div>
         ) : (
           <>
             <div className="upload-section">

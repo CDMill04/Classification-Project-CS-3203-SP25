@@ -1,20 +1,18 @@
 [
   {
-    "id": 1745853935604,
+    "id": 1745889763757,
     "name": "John Doe",
     "email": "johndoe@example.com",
-    "password": "password"
+    "password": "password",
+    "role": "None",
+    "school": "None"
   },
   {
-    "id": 1745877587739,
+    "id": 1745892675852,
     "name": "Jane Doe",
     "email": "janedoe@example.com",
-    "password": "password"
-  },
-  {
-    "id": 1745890425459,
-    "name": "cade murphy",
-    "email": "cademurphy33@gmail.com",
-    "password": "test123"
+    "password": "password",
+    "role": "Admin",
+    "school": "None"
   }
 ]

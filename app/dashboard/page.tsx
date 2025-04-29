@@ -6,6 +6,9 @@ import SignUpModal from "@/app/components/modals/SignUpPage";
 import { Button } from "@/app/components/ui/button";
 import Layout from "@/app/components/Layout";
 import { useSessionTimeout } from "../hooks/useSessionTimeout";
+import useCurrentUser from "@/app/hooks/useCurrentUser";
+import { fetchUserByEmail, fetchUserUploadsByEmail } from "./actions";
+
 
 import { OriginGuard } from "@/app/OriginGuard";
 export default function DashboardPage() {
@@ -25,25 +28,52 @@ export default function DashboardPage() {
 
 export function Dashboard() {
   useSessionTimeout();
+
+  const { user, isMounted } = useCurrentUser();
   const [isLoginOpen, setLoginOpen] = useState(false);
   const [isSignUpOpen, setSignUpOpen] = useState(false);
-  const [isMounted, setIsMounted] = useState(false);
   const [logoutMessage, setLogoutMessage] = useState(false);
+  const [currentDate, setCurrentDate] = useState("");
+  const [userInfo, setUserInfo] = useState<any>(null);
+  const [userUploads, setUserUploads] = useState<any[]>([]);
 
   useEffect(() => {
-    setIsMounted(true);
+    if (!isMounted) return;
 
     const success = localStorage.getItem('logoutSuccess');
     if (success) {
       setLogoutMessage(true);
-      localStorage.removeItem('logoutSuccess'); // Clear flag immediately
+      localStorage.removeItem('logoutSuccess');
 
-      // Auto-hide the message after 3 seconds
       setTimeout(() => {
         setLogoutMessage(false);
       }, 3000);
     }
-  }, []);
+  }, [isMounted]);
+
+  // Set today's date
+  useEffect(() => {
+    if (!isMounted) return;
+
+    const today = new Date();
+    const options: Intl.DateTimeFormatOptions = { weekday: 'long', month: 'long', day: 'numeric', year: 'numeric' };
+    setCurrentDate(today.toLocaleDateString(undefined, options));
+  }, [isMounted]);
+
+  // Fetch user info if logged in
+  useEffect(() => {
+    async function loadUserInfoAndUploads() {
+      if (user?.email) {
+        const loadedUser = await fetchUserByEmail(user.email);
+        setUserInfo(loadedUser);
+  
+        const loadedUploads = await fetchUserUploadsByEmail(user.email);
+        setUserUploads(loadedUploads);
+      }
+    }
+  
+    loadUserInfoAndUploads();
+  }, [user]);
 
   const openLogin = () => {
     setLoginOpen(true);
@@ -66,7 +96,9 @@ export function Dashboard() {
     <Layout>
       {/* Top Bar */}
       <div className="sticky top-0 z-20 flex justify-between items-center p-4 bg-background border-b">
-        <h2 className="text-2xl font-bold">Dashboard</h2>
+        <div>
+          <h2 className="text-2xl font-bold">Dashboard</h2>
+        </div>
         <Button
           onClick={openLogin}
           className="bg-[hsl(var(--primary))] text-white hover:opacity-90 rounded-lg"
@@ -83,72 +115,101 @@ export function Dashboard() {
       )}
 
       {/* Main Dashboard Content */}
-      <div className="grid grid-cols-1 gap-6 mt-6">
-        {/* Large Card: School Info */}
-        <div className="p-6 rounded-2xl border shadow bg-card">
-          <h3 className="text-2xl font-semibold mb-4">School Information</h3>
-          <p className="text-muted-foreground mb-2">University of Oklahoma</p>
-          <p className="text-muted-foreground mb-2">President: Joseph Harroz</p>
-          <p className="text-muted-foreground">Number of Teachers: 4,000</p>
-
-          {/* Divider Line */}
-          <hr className="my-4 border-t-2 border-[hsl(var(--primary))] rounded-full" />
-
-          {/* Progress Bar */}
-          <h4 className="text-lg font-semibold mb-2">Semester Progress</h4>
-          <div className="w-full bg-muted rounded-full h-4 mb-2">
-            <div
-              className="bg-[hsl(var(--primary))] h-4 rounded-full"
-              style={{ width: "93.75%" }}
-            ></div>
-          </div>
-          <p className="text-sm text-muted-foreground">
-            93.75% through the current semester (Almost there!)
+      <div className="p-6 mt-6">
+        {!user ? (
+          <div className="flex flex-1 flex-col items-center justify-start text-center px-8 pt-16 h-[calc(100vh-64px)]">
+          <img 
+            src="/broken_pencil.png" 
+            alt="Broken Pencil" 
+            className="w-64 h-64 mb-6 object-contain" 
+          />
+          <p className="text-2xl font-semibold text-muted-foreground">
+            Oops! You must be logged in to view the Dashboard.
           </p>
         </div>
+        ) : (
+          <div className="grid grid-cols-1 gap-6">
+            {/* Semester Progress (TOP) */}
+            <div className="p-6 rounded-2xl border shadow bg-card">
+              <h4 className="text-lg font-semibold mb-4">Semester Progress</h4>
+              <div className="w-full bg-muted rounded-full h-4 mb-2">
+                <div
+                  className="bg-[hsl(var(--primary))] h-4 rounded-full"
+                  style={{ width: "93.75%" }}
+                ></div>
+              </div>
+              <p className="text-sm text-muted-foreground">
+                93.75% through the current semester (Almost there!)
+              </p>
+            </div>
 
-        {/* Two Smaller Cards in a Row */}
-        <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-          {/* Small Card 1: Profile Info */}
-          <div className="p-6 rounded-2xl border shadow bg-card">
-            <h3 className="text-xl font-semibold mb-4">Profile Info</h3>
-            <p className="text-muted-foreground mb-2">Mansoor Abdulhaak</p>
-            <p className="text-muted-foreground mb-2">Email: m.hak@ou.edu</p>
-            <p className="text-muted-foreground">Role: Professor</p>
-          </div>
+            {/* Profile Info (now first) */}
+            <div className="p-6 rounded-2xl border shadow bg-card">
+              <h3 className="text-xl font-semibold mb-4">Profile Info</h3>
+              {userInfo ? (
+                <>
+                  <p className="text-muted-foreground mb-2">{userInfo.name}</p>
+                  <p className="text-muted-foreground mb-2">Email: {userInfo.email}</p>
+                  <p className="text-muted-foreground">Role: {userInfo.role || "Unknown"}</p>
+                </>
+              ) : (
+                <p className="text-muted-foreground">Loading user info...</p>
+              )}
+            </div>
 
-          {/* Small Card 2: Recent Uploads */}
-          <div className="p-6 rounded-2xl border shadow bg-card">
-            <h3 className="text-xl font-semibold mb-4">Recent Uploads</h3>
-            <ul className="list-disc list-inside text-muted-foreground">
-              <li>Ticket 5: Sprint 2 - Uploaded 2 weeks ago</li>
-              <li>Ticket 4: System Architecture - Uploaded 3 weeks ago</li>
-              <li>Security and Reliability - Uploaded 4 weeks ago</li>
-              <li>User Stories - Uploaded 8 weeks ago</li>
-            </ul>
+            {/* Recent Uploads (now below Profile Info) */}
+            <div className="p-6 rounded-2xl border shadow bg-card">
+              <h3 className="text-xl font-semibold mb-4">Recent Uploads</h3>
+              {userUploads.length === 0 ? (
+                <p className="text-muted-foreground">No uploads found.</p>
+              ) : (
+                <div className="overflow-x-auto">
+                  <table className="min-w-full text-left text-muted-foreground">
+                    <thead className="bg-muted">
+                      <tr>
+                        <th className="px-4 py-2">Date</th>
+                        <th className="px-4 py-2">File</th>
+                        <th className="px-4 py-2">Status</th>
+                      </tr>
+                    </thead>
+                    <tbody>
+                      {userUploads.map((upload, index) => (
+                        <tr key={index} className="border-b">
+                          <td className="px-4 py-2">{upload.date}</td>
+                          <td className="px-4 py-2">
+                            <a href={upload.url} target="_blank" rel="noopener noreferrer" className="text-primary hover:underline">
+                              {upload.filename}
+                            </a>
+                          </td>
+                          <td className="px-4 py-2">{upload.status}</td>
+                        </tr>
+                      ))}
+                    </tbody>
+                  </table>
+                </div>
+              )}
+            </div>
           </div>
-        </div>
+        )}
       </div>
 
       {/* Login and Sign Up Modals */}
-      {isMounted && (
-        <>
-          <LoginModal
-            isOpen={isLoginOpen}
-            onClose={closeAllModals}
-            openSignUp={openSignUp}
-            onLoginSuccess={() => {
-              closeAllModals();
-              window.location.reload();
-            }}
-          />
-          <SignUpModal
-            isOpen={isSignUpOpen}
-            onClose={closeAllModals}
-            openLogin={openLogin}
-          />
-        </>
-      )}
+      <>
+        <LoginModal
+          isOpen={isLoginOpen}
+          onClose={closeAllModals}
+          openSignUp={openSignUp}
+          onLoginSuccess={() => {
+            closeAllModals();
+            window.location.reload();
+          }}
+        />
+        <SignUpModal
+          isOpen={isSignUpOpen}
+          onClose={closeAllModals}
+          openLogin={openLogin}
+        />
+      </>
     </Layout>
   );
 }

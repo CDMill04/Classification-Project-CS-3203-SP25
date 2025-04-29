@@ -36,7 +36,7 @@ export default function SignUpModal({ isOpen, onClose, openLogin }: SignUpModalP
       const res = await fetch('/api/users', {   // Try to create a login
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ name, email, password }),
+        body: JSON.stringify({ name, email, password, role: "None", school: "None" }),
       });
 
       const data = await res.json();   // See if it worked
