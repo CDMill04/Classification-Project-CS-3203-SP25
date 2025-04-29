@@ -4,14 +4,16 @@ import { useState } from "react";
 import { Input } from "@/app/components/ui/input";   // Import UI
 import { Button } from "@/app/components/ui/button";
 import { X } from "lucide-react";
+import { motion } from "framer-motion";
 
 interface LoginModalProps {   // This is all of our props that are created with this modal
   isOpen: boolean;
   onClose: () => void;
   openSignUp: () => void;
+  onLoginSuccess: () => void;  // This is the function that will be called when the user successfully logs in
 }
 
-export default function LoginModal({ isOpen, onClose, openSignUp }: LoginModalProps) {  // Prepare to recieve email and password
+export default function LoginModal({ isOpen, onClose, openSignUp, onLoginSuccess }: LoginModalProps) {  // Prepare to recieve email and password
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
   const [error, setError] = useState('');    // Prep errors
@@ -36,6 +38,7 @@ export default function LoginModal({ isOpen, onClose, openSignUp }: LoginModalPr
         console.log("Login successful for:", foundUser.name);
         localStorage.setItem('user', JSON.stringify(foundUser));
         onClose();
+        onLoginSuccess();   // Call the function to update the UI
         // We could also optionally reload the page here if needed
       } else {
         setError("Invalid email or password.");  // Catch errors
@@ -50,7 +53,13 @@ export default function LoginModal({ isOpen, onClose, openSignUp }: LoginModalPr
 
   return (   // UI 
     <div className="fixed inset-0 bg-black/50 flex items-center justify-center z-50">
-      <div className="bg-white p-8 rounded-2xl shadow-lg w-full max-w-md relative">
+      <motion.div
+        initial={{ opacity: 0, y:50 }}
+        animate={{ opacity: 1, y:0 }}
+        exit={{ opacity: 0, y:50 }}
+        transition={{ duration: 0.3 }}
+        className="bg-white p-8 rounded-2xl shadow-lg w-full max-w-md relative"
+      >
         <button
           onClick={onClose}
           className="absolute top-4 right-4 text-gray-500 hover:text-black"
@@ -110,7 +119,7 @@ export default function LoginModal({ isOpen, onClose, openSignUp }: LoginModalPr
             </button>
           </p>
         </div>
-      </div>
+      </motion.div>
     </div>
   );
 }

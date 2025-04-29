@@ -24,6 +24,10 @@ export default function Sidebar() {
     localStorage.removeItem('user');  // Clear saved user
     console.log("User logged out");
     router.push('/dashboard');         // Optionally go somewhere safe
+    // Add a small delay to make sure the router push happens first
+    setTimeout(() => {
+      window.location.reload();
+    }, 50);
   };
 
   return (

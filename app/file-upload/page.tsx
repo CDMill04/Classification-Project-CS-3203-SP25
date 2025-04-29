@@ -8,8 +8,40 @@ import { Button } from "@/app/components/ui/button";
 import LoginModal from "@/app/components/modals/loginPage";
 import SignUpModal from "@/app/components/modals/SignUpPage";
 
-export default function FileUpload() {
-  const [user, setUser] = useState<{ name: string; email: string } | null>(null);
+import useCurrentUser from "@/app/hooks/useCurrentUser";
+import users from "@/app/data/users.json"; // Assuming you have a JSON file with user data
+
+// File sanitization function for CWE-79: Improper Neutralization of Input During Web Page Generation ('Cross-site Scripting')
+// This function replaces unsafe characters in filenames with underscores and limits the length to 100 characters.
+const sanitizeFilename = (name: string) => {
+  const safeName = name
+    .replace(/[^a-zA-Z0-9.\-_]/g, '_')    // Allow only safe characters
+    .replace(/\.+/g, '.')                 // Replace multiple dots with one dot
+    .replace(/^\.*/, '')                  // Remove leading dots
+    .replace(/_*$/, '');                  // Remove trailing underscores
+  return safeName.length > 100 ? safeName.slice(0, 100) : safeName; // Limit filename length
+};
+
+import { OriginGuard } from "@/app/OriginGuard";
+export default function FileUploadPage() {
+  return (
+    <>
+      <OriginGuard               /* ← the referrer check */
+        allowList={[
+          "https://lms.example.edu",
+          "http://localhost:3000",
+        ]}
+      />
+
+      <FileUpload />             {/* ← your real UI */}
+    </>
+  );
+}
+
+export function FileUpload() {
+  const { user, setUser, isMounted } = useCurrentUser();  // <-- NEW HOOK
+
+  // const [user, setUser] = useState<{ name: string; email: string } | null>(null);
   const [files, setFiles] = useState<File[]>([]);
   const [uploading, setUploading] = useState(false);
   const [uploadedFiles, setUploadedFiles] = useState<
@@ -19,13 +51,19 @@ export default function FileUpload() {
   const [error, setError] = useState("");
   const [uploadSuccess, setUploadSuccess] = useState(false);
   const [loading, setLoading] = useState(true);
+  const [isTeacher, setIsTeacher] = useState(true);
 
   const [isLoginOpen, setLoginOpen] = useState(false);
   const [isSignUpOpen, setSignUpOpen] = useState(false);
-  const [isMounted, setIsMounted] = useState(false);
+  // const [isMounted, setIsMounted] = useState(false);
 
   const USER_EMAIL = user?.email || ""; // <-- CORRECT: outside, dynamically using user
+  function getRoleByEmail(USER_EMAIL: string) {
+    const user = users.find(u => u.email === USER_EMAIL);
+    return user ? user.role : null;
+  }
 
+  /*
   useEffect(() => {
     setIsMounted(true);
 
@@ -35,10 +73,14 @@ export default function FileUpload() {
       setUser(parsedUser);
     }
   }, []);
+  */
 
   // Fetch uploads when user is ready
   useEffect(() => {
     if (USER_EMAIL) {
+      if (getRoleByEmail(USER_EMAIL) === "Admin") {
+        setIsTeacher(false);
+      }
       console.log("Fetching uploads...");
       fetchUploads();
     }
@@ -57,7 +99,6 @@ export default function FileUpload() {
   const closeAllModals = () => {
     setLoginOpen(false);
     setSignUpOpen(false);
-    window.location.reload(); // Reload the page to fetch uploads again
   };
 
   const fetchUploads = async () => {
@@ -129,7 +170,7 @@ export default function FileUpload() {
 
         const newUpload = {
           date: new Date().toISOString().split("T")[0],
-          filename: file.name,
+          filename: sanitizeFilename(file.name),
           semester,
           status: "Pending",
           url: result.url || "",
@@ -168,7 +209,27 @@ export default function FileUpload() {
   </div>
       <div className="p-6 mt-6">
         {loading ? (
-          <p>You must log in to view your uploads.</p> // Display a loading message or spinner
+          <div className="flex flex-1 flex-col items-center justify-start text-center px-8 pt-16 h-[calc(100vh-64px)]">
+          <img 
+            src="/broken_pencil.png" 
+            alt="Broken Pencil" 
+            className="w-64 h-64 mb-6 object-contain" 
+          />
+          <p className="text-2xl font-semibold text-muted-foreground">
+            Oops! You must be logged in to view your uploads.
+          </p>
+        </div>
+        ) : !isTeacher ? (
+          <div className = "flex flex-col items-center justify-center text-center px-9 pt-16 h-[calc(100vh-64px)]">
+            <img 
+              src="/sad3.webp"
+              alt="Admin"
+              className="w-64 h-64 mb-6 object-contain"
+            />
+            <p className="text-2xl font-semibold text-muted-foreground">
+              You are logged in as an Admin. Wait for the admin view feature to be implemented.
+            </p>
+          </div>
         ) : (
           <>
             <div className="upload-section">
@@ -192,9 +253,14 @@ export default function FileUpload() {
                 </div>
                 <div className="form-group">
                   <label>Select File:</label>
-                  <input type="file" multiple onChange={handleFileChange} required />
+                  <input 
+                    type="file" 
+                    accept="application/pdf"
+                    multiple 
+                    onChange={handleFileChange} 
+                    required />
                   <p className="file-hint">
-                    Accepted formats: PDF, DOCX (Max size: 50MB)
+                    Accepted formats: PDF (Max size: 50MB)
                   </p>
                 </div>
                 <button
@@ -208,7 +274,7 @@ export default function FileUpload() {
             </div>
 
             <div className="upload-section">
-              <h3>Recent Uploads - Can take up to a minute to upload</h3>
+              <h3>Recent Uploads - Can take up to a minute to show changes</h3>
               <table className="uploads-table">
                 <thead>
                   <tr>
@@ -428,6 +494,10 @@ export default function FileUpload() {
             isOpen={isLoginOpen}
             onClose={closeAllModals}
             openSignUp={openSignUp}
+            onLoginSuccess={() => {
+              closeAllModals();
+              window.location.reload(); // Reload to fetch uploads
+            }}
           />
           <SignUpModal
             isOpen={isSignUpOpen}
