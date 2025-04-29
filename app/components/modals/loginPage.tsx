@@ -26,6 +26,27 @@ export default function LoginModal({ isOpen, onClose, openSignUp, onLoginSuccess
     setError('');
     setLoading(true);
 
+    const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/; // This is a set of invalid inputs
+    const hasScript = /<script.*?>.*?<\/script>/gi;
+
+    if (!email || !password) {    // The user should be aware they have to fill out both fields
+      setError("Please fill out both fields.");
+      setLoading(false);
+      return;
+    }
+
+    if (!emailRegex.test(email)) { // Make sure the email is not an attack
+      setError("Please enter a valid email address.");
+      setLoading(false);
+      return;
+    }
+
+    if (hasScript.test(email) || hasScript.test(password)) { // Make sure there is no attempted script injection
+      setError("Input contains restricted content.");
+      setLoading(false);
+      return;
+    }
+
     try { // Try to recieve user info
       const res = await fetch('/api/users');
       const users = await res.json();
