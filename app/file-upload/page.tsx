@@ -10,7 +10,23 @@ import SignUpModal from "@/app/components/modals/SignUpPage";
 
 import useCurrentUser from "@/app/hooks/useCurrentUser";
 
-export default function FileUpload() {
+import { OriginGuard } from "@/app/OriginGuard";
+export default function FileUploadPage() {
+  return (
+    <>
+      <OriginGuard               /* ← the referrer check */
+        allowList={[
+          "https://lms.example.edu",
+          "http://localhost:3000",
+        ]}
+      />
+
+      <FileUpload />             {/* ← your real UI */}
+    </>
+  );
+}
+
+export function FileUpload() {
   const { user, setUser, isMounted } = useCurrentUser();  // <-- NEW HOOK
 
   // const [user, setUser] = useState<{ name: string; email: string } | null>(null);

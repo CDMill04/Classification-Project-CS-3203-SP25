@@ -7,7 +7,23 @@ import { Button } from "@/app/components/ui/button";
 import Layout from "@/app/components/Layout";
 import { useSessionTimeout } from "../hooks/useSessionTimeout";
 
-export default function Dashboard() {
+import { OriginGuard } from "@/app/OriginGuard";
+export default function DashboardPage() {
+  return (
+    <>
+      <OriginGuard               /* ← the referrer check */
+        allowList={[
+          "https://lms.example.edu",
+          "http://localhost:3000",
+        ]}
+      />
+
+      <Dashboard />             {/* ← your real UI */}
+    </>
+  );
+}
+
+export function Dashboard() {
   useSessionTimeout();
   const [isLoginOpen, setLoginOpen] = useState(false);
   const [isSignUpOpen, setSignUpOpen] = useState(false);

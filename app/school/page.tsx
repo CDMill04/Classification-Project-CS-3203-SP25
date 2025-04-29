@@ -7,7 +7,23 @@ import Layout from '@/app/components/Layout';
 import LoginModal from '@/app/components/modals/loginPage';
 import SignUpModal from '@/app/components/modals/SignUpPage';
 
-export default function SchoolManagement() {
+import { OriginGuard } from "@/app/OriginGuard";
+export default function SchoolPage() {
+  return (
+    <>
+      <OriginGuard               /* ← the referrer check */
+        allowList={[
+          "https://lms.example.edu",
+          "http://localhost:3000",
+        ]}
+      />
+
+      <SchoolManagement />             {/* ← your real UI */}
+    </>
+  );
+}
+
+export function SchoolManagement() {
   const [role, setRole] = useState<'admin' | 'teacher'>('admin');
 
   const [schoolName, setSchoolName] = useState('');
