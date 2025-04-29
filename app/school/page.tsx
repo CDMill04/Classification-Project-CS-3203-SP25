@@ -108,7 +108,7 @@ export default function SchoolManagement() {
             className="w-64 h-64 mb-6 object-contain" 
           />
           <p className="text-2xl font-semibold text-muted-foreground">
-            Oops! You must be logged in to view the Dashboard.
+            Oops! You must be logged in to view your school.
           </p>
         </div>
       </Layout>
