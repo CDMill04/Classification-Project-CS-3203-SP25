@@ -200,12 +200,14 @@ export function FileUpload() {
     <Layout>
       <div className="sticky top-0 z-20 flex justify-between items-center p-4 bg-background border-b">
         <h2 className="text-2xl font-bold">File Upload Center</h2>
+        {!user && (
         <Button
           onClick={openLogin}
           className="bg-[hsl(var(--primary))] text-white hover:opacity-90 rounded-lg"
         >
           Log In
         </Button>
+        )}
   </div>
       <div className="p-6 mt-6">
         {loading ? (

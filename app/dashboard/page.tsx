@@ -38,18 +38,16 @@ export function Dashboard() {
   const [userUploads, setUserUploads] = useState<any[]>([]);
 
   useEffect(() => {
-    if (!isMounted) return;
-
     const success = localStorage.getItem('logoutSuccess');
     if (success) {
       setLogoutMessage(true);
       localStorage.removeItem('logoutSuccess');
-
+  
       setTimeout(() => {
         setLogoutMessage(false);
       }, 3000);
     }
-  }, [isMounted]);
+  }, []);  
 
   // Set today's date
   useEffect(() => {
@@ -99,12 +97,14 @@ export function Dashboard() {
         <div>
           <h2 className="text-2xl font-bold">Dashboard</h2>
         </div>
+        {!user && (
         <Button
           onClick={openLogin}
           className="bg-[hsl(var(--primary))] text-white hover:opacity-90 rounded-lg"
         >
           Log In
         </Button>
+        )}
       </div>
 
       {/* Success Message */}
