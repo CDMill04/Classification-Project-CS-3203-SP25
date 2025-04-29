@@ -1,4 +1,4 @@
-
+/* Code for uploading files to Vercel Blob for when we transfer to Vercel Server Hosting
 "use server";
 
 import { put } from "@vercel/blob";
@@ -121,98 +121,111 @@ export async function updateUploadStatus(USER_EMAIL: string, filename: string, n
   }
 }
 
-/*
-"use server"
+*/
 
-import fs from "fs/promises"
-import path from "path"
+"use server";
 
-// Define a local directory to store JSON files
-const LOCAL_STORAGE_DIR = path.join(process.cwd(), "public", "local-uploads")
+import fs from "fs/promises";
+import path from "path";
 
-const USER_EMAIL = "userEmail@example.com"
+// Path to uploaded files (actual uploaded documents)
+const UPLOADS_FOLDER = path.join(process.cwd(), "public", "local-uploads", "uploaded-files");
 
-// Ensure the directory exists
-async function ensureLocalStorageDir() {
+// Path to metadata JSON files
+const METADATA_FOLDER = path.join(process.cwd(), "app", "data", "user-upload-data");
+
+async function ensureDir(dirPath: string) {
   try {
-    await fs.mkdir(LOCAL_STORAGE_DIR, { recursive: true })
+    await fs.mkdir(dirPath, { recursive: true });
   } catch (error) {
-    console.error("Error creating local storage directory:", error)
+    console.error("Error ensuring directory exists:", error);
   }
 }
 
-// Simulate uploading a file to local storage
-export async function uploadToBlob(formData: FormData) {
+// Upload file to local filesystem
+export async function uploadToBlob(formData: FormData, userEmail: string) {
   try {
-    const file = formData.get("file") as File
+    const file = formData.get("file") as File;
+    if (!file) throw new Error("No file provided");
 
-    if (!file) {
-      throw new Error("No file provided")
-    }
+    const filePath = path.join(UPLOADS_FOLDER, file.name);
+    await ensureDir(UPLOADS_FOLDER);
+    await fs.writeFile(filePath, Buffer.from(await file.arrayBuffer()));
 
-    // Use the original filename
-    const filePath = path.join(LOCAL_STORAGE_DIR, file.name);
-
-    // Write the file to the local storage directory
-    await ensureLocalStorageDir()
-    await fs.writeFile(filePath, Buffer.from(await file.arrayBuffer()))
-
-    console.log("File saved at:", filePath) // Debugging
+    const fileUrl = `/local-uploads/uploaded-files/${file.name}`; // public path
 
     return {
       success: true,
-      url: `http://192.168.1.247:3000/local-uploads/${file.name}`, // Simulate a URL
+      url: fileUrl,
       filename: file.name,
-    }
+    };
   } catch (error) {
-    console.error("Error uploading to local storage:", error)
-    return {
-      success: false,
-      error: "Failed to upload file. " + (error instanceof Error ? error.message : "Unknown error"),
-    }
+    console.error("Error uploading:", error);
+    return { success: false, error: error instanceof Error ? error.message : "Unknown error" };
   }
 }
 
-// Fetch user uploads from a local JSON file
-export async function fetchUserUploads(USER_EMAIL: string) {
+// Fetch user uploads (metadata JSON)
+export async function fetchUserUploads(userEmail: string) {
   try {
-    const filePath = path.join(LOCAL_STORAGE_DIR, `${USER_EMAIL}.json`)
-    console.log("Looking for file at:", filePath) // Debugging
+    const metadataPath = path.join(METADATA_FOLDER, `${userEmail}.json`);
+    await ensureDir(METADATA_FOLDER);
 
-    // Check if the file exists
     try {
-      const data = await fs.readFile(filePath, "utf-8")
-      console.log("Fetched uploads:", JSON.parse(data)) // Debugging
-      return JSON.parse(data)
-    } catch (error) {
-      if ((error as NodeJS.ErrnoException).code === "ENOENT") {
-        // File doesn't exist, return an empty array
-        console.log("No uploads found, returning empty array") // Debugging
-        return []
+      const data = await fs.readFile(metadataPath, "utf8");
+      return JSON.parse(data);
+    } catch (err) {
+      if ((err as NodeJS.ErrnoException).code === "ENOENT") {
+        return []; // No file yet = no uploads
       }
-      throw error
+      throw err;
     }
   } catch (error) {
-    console.error("Error fetching user uploads:", error)
-    return []
+    console.error("Error fetching uploads:", error);
+    return [];
   }
 }
 
-// Update user uploads in a local JSON file
-export async function updateUserUploads(USER_EMAIL: string, newUpload: object) {
+// Save (or update) a user's uploads
+export async function updateUserUploads(userEmail: string, newUpload: object) {
   try {
-    const existingUploads = await fetchUserUploads(USER_EMAIL)
-    const updatedUploads = [...existingUploads, newUpload]
-    const filePath = path.join(LOCAL_STORAGE_DIR, `${USER_EMAIL}.json`)
+    const uploads = await fetchUserUploads(userEmail);
+    const updatedUploads = [...uploads, newUpload];
 
-    // Write the updated JSON file to the local storage directory
-    await ensureLocalStorageDir()
-    await fs.writeFile(filePath, JSON.stringify(updatedUploads, null, 2))
+    const metadataPath = path.join(METADATA_FOLDER, `${userEmail}.json`);
+    await ensureDir(METADATA_FOLDER);
+    await fs.writeFile(metadataPath, JSON.stringify(updatedUploads, null, 2));
 
-    return `http://192.168.1.247:3000/local-uploads/${USER_EMAIL}.json` // Simulate a URL
+    return `/local-uploads/files/${userEmail}.json`;
   } catch (error) {
-    console.error("Error updating user uploads:", error)
-    throw error
+    console.error("Error updating uploads:", error);
+    throw error;
   }
 }
-*/
+
+export async function updateFileStatus(userEmail: string, filename: string, newStatus: string) {
+  try {
+    const metadataPath = path.join(METADATA_FOLDER, `${userEmail}.json`);
+    await ensureDir(METADATA_FOLDER);
+
+    const data = await fs.readFile(metadataPath, "utf8");
+    let uploads = JSON.parse(data);
+
+    // Find the file and update status
+    uploads = uploads.map((upload: any) => {
+      if (upload.filename === filename) {
+        return { ...upload, status: newStatus };
+      }
+      return upload;
+    });
+
+    // Save the updated uploads back
+    await fs.writeFile(metadataPath, JSON.stringify(uploads, null, 2));
+
+    return { success: true };
+  } catch (error) {
+    console.error("Error updating file status:", error);
+    throw error;
+  }
+}
+

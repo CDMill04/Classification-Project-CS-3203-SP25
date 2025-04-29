@@ -1,12 +1,13 @@
 'use client';
 
 import Link from "next/link";
-import { usePathname } from "next/navigation";
+import { usePathname, useRouter } from "next/navigation";
 import { useEffect, useState } from "react";
 import { Button } from "@/app/components/ui/button";
 
 export default function Sidebar() {
   const pathname = usePathname();
+  const router = useRouter();
   const [isMounted, setIsMounted] = useState(false);
 
   useEffect(() => {
@@ -18,6 +19,16 @@ export default function Sidebar() {
   }
 
   const isActive = (path: string) => pathname.startsWith(path);
+
+  const handleLogout = () => {
+    localStorage.removeItem('user');  // Clear saved user
+    console.log("User logged out");
+    router.push('/dashboard');         // Optionally go somewhere safe
+    // Add a small delay to make sure the router push happens first
+    setTimeout(() => {
+      window.location.reload();
+    }, 50);
+  };
 
   return (
     <div className="flex flex-col justify-between sticky top-0 h-screen p-4 bg-[hsl(var(--primary))] text-white">
@@ -57,7 +68,7 @@ export default function Sidebar() {
         <Button
           variant="outline"
           className="w-full bg-white text-[hsl(var(--primary))] border-white hover:bg-muted hover:text-[hsl(var(--primary))] font-semibold rounded-lg"
-          onClick={() => console.log("Logout clicked")}
+          onClick={handleLogout}
         >
           Log Out
         </Button>

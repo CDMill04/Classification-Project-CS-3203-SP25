@@ -8,6 +8,7 @@ import LoginModal from "@/app/components/modals/loginPage";
 import SignUpModal from "@/app/components/modals/SignUpPage";
 import { getAllSchools, getAllUsers, createSchool, joinSchool, updateUser, promoteToAdmin, getLessonPlansForSchool } from "./actions";
 
+
 export default function SchoolManagement() {
   const { user, isMounted } = useCurrentUser();
   const [loading, setLoading] = useState(true);
@@ -218,22 +219,24 @@ export default function SchoolManagement() {
         )}
       </div>
       {/* Login and Sign Up Modals */}
-            <>
-              <LoginModal
-                isOpen={isLoginOpen}
-                onClose={closeAllModals}
-                openSignUp={openSignUp}
-                onLoginSuccess={() => {
-                  closeAllModals();
-                  window.location.reload();
-                }}
-              />
-              <SignUpModal
-                isOpen={isSignUpOpen}
-                onClose={closeAllModals}
-                openLogin={openLogin}
-              />
-            </>
+      {isMounted && (
+        <>
+          <LoginModal
+            isOpen={isLoginOpen}
+            onClose={closeAllModals}
+            openSignUp={openSignUp}
+            onLoginSuccess={() => {
+              closeAllModals();
+              window.location.reload();
+            }}
+          />
+          <SignUpModal
+            isOpen={isSignUpOpen}
+            onClose={closeAllModals}
+            openLogin={openLogin}
+          />
+        </>
+      )}
     </Layout>
   );
 }
