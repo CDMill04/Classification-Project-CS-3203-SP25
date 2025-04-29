@@ -10,6 +10,15 @@ import SignUpModal from "@/app/components/modals/SignUpPage";
 
 import useCurrentUser from "@/app/hooks/useCurrentUser";
 
+const sanitizeFilename = (name: string) => {
+  const safeName = name
+    .replace(/[^a-zA-Z0-9.\-_]/g, '_')    // Allow only safe characters
+    .replace(/\.+/g, '.')                 // Replace multiple dots with one dot
+    .replace(/^\.*/, '')                  // Remove leading dots
+    .replace(/_*$/, '');                  // Remove trailing underscores
+  return safeName.length > 100 ? safeName.slice(0, 100) : safeName; // Limit filename length
+};
+
 export default function FileUpload() {
   const { user, setUser, isMounted } = useCurrentUser();  // <-- NEW HOOK
 
@@ -134,7 +143,7 @@ export default function FileUpload() {
 
         const newUpload = {
           date: new Date().toISOString().split("T")[0],
-          filename: file.name,
+          filename: sanitizeFilename(file.name),
           semester,
           status: "Pending",
           url: result.url || "",
