@@ -1,16 +1,10 @@
 [
   {
-    "id": 1745887895261,
+    "id": 1745889763757,
     "name": "John Doe",
     "email": "johndoe@example.com",
     "password": "password",
-    "role": "Teacher"
-  },
-  {
-    "id": 1745889134572,
-    "name": "Jane Doe",
-    "email": "janedoe@example.com",
-    "password": "password",
-    "role": "Admin"
+    "role": "None",
+    "school": "None"
   }
 ]
