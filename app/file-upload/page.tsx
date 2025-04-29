@@ -173,7 +173,16 @@ export default function FileUpload() {
   </div>
       <div className="p-6 mt-6">
         {loading ? (
-          <p>You must log in to view your uploads.</p> // Display a loading message or spinner
+          <div className="flex flex-1 flex-col items-center justify-start text-center px-8 pt-16 h-[calc(100vh-64px)]">
+          <img 
+            src="/broken_pencil.png" 
+            alt="Broken Pencil" 
+            className="w-64 h-64 mb-6 object-contain" 
+          />
+          <p className="text-2xl font-semibold text-muted-foreground">
+            Oops! You must be logged in to view your uploads.
+          </p>
+        </div>
         ) : (
           <>
             <div className="upload-section">
