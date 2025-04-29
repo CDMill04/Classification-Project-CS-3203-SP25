@@ -20,7 +20,23 @@ const sanitizeFilename = (name: string) => {
   return safeName.length > 100 ? safeName.slice(0, 100) : safeName; // Limit filename length
 };
 
-export default function FileUpload() {
+import { OriginGuard } from "@/app/OriginGuard";
+export default function FileUploadPage() {
+  return (
+    <>
+      <OriginGuard               /* ← the referrer check */
+        allowList={[
+          "https://lms.example.edu",
+          "http://localhost:3000",
+        ]}
+      />
+
+      <FileUpload />             {/* ← your real UI */}
+    </>
+  );
+}
+
+export function FileUpload() {
   const { user, setUser, isMounted } = useCurrentUser();  // <-- NEW HOOK
 
   // const [user, setUser] = useState<{ name: string; email: string } | null>(null);
