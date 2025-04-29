@@ -10,7 +10,23 @@ import useCurrentUser from "@/app/hooks/useCurrentUser";
 import { fetchUserByEmail, fetchUserUploadsByEmail } from "./actions";
 
 
-export default function Dashboard() {
+import { OriginGuard } from "@/app/OriginGuard";
+export default function DashboardPage() {
+  return (
+    <>
+      <OriginGuard               /* ← the referrer check */
+        allowList={[
+          "https://lms.example.edu",
+          "http://localhost:3000",
+        ]}
+      />
+
+      <Dashboard />             {/* ← your real UI */}
+    </>
+  );
+}
+
+export function Dashboard() {
   useSessionTimeout();
 
   const { user, isMounted } = useCurrentUser();
