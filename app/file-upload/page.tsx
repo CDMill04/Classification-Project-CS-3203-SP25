@@ -206,7 +206,7 @@ export function FileUpload() {
         >
           Log In
         </Button>
-  </div>
+      </div>
       <div className="p-6 mt-6">
         {loading ? (
           <div className="flex flex-1 flex-col items-center justify-start text-center px-8 pt-16 h-[calc(100vh-64px)]">
@@ -220,16 +220,54 @@ export function FileUpload() {
           </p>
         </div>
         ) : !isTeacher ? (
-          <div className = "flex flex-col items-center justify-center text-center px-9 pt-16 h-[calc(100vh-64px)]">
-            <img 
-              src="/sad3.webp"
-              alt="Admin"
-              className="w-64 h-64 mb-6 object-contain"
-            />
-            <p className="text-2xl font-semibold text-muted-foreground">
-              You are logged in as an Admin. Wait for the admin view feature to be implemented.
-            </p>
-          </div>
+          <div className="upload-section">
+          <h3>Recent Uploads - Can take up to a minute to show changes</h3>
+          <table className="uploads-table">
+            <thead>
+              <tr>
+                <th>Date</th>
+                <th>Filename</th>
+                <th>Semester</th>
+                <th>Status</th>
+                <th>Actions</th>
+              </tr>
+            </thead>
+            <tbody>
+              {uploadedFiles.map((file, index) => (
+                <tr key={index}>
+                  <td>{file.date}</td>
+                  <td>
+                    <a
+                      href={file.url}
+                      target="_blank"
+                      rel="noopener noreferrer"
+                    >
+                      {file.filename}
+                    </a>
+                  </td>
+                  <td>{file.semester}</td>
+                  <td className={`status-${file.status.toLowerCase()}`}>
+                    {file.status}
+                  </td>
+                  <td>
+                    <button
+                      className="action-link approve"
+                      onClick={() => handleStatusChange(index, "Approved")}
+                    >
+                      Approve
+                    </button>
+                    <button
+                      className="action-link disapprove"
+                      onClick={() => handleStatusChange(index, "Disapproved")}
+                    >
+                      Disapprove
+                    </button>
+                  </td>
+                </tr>
+              ))}
+            </tbody>
+          </table>
+        </div>
         ) : (
           <>
             <div className="upload-section">
@@ -282,7 +320,6 @@ export function FileUpload() {
                     <th>Filename</th>
                     <th>Semester</th>
                     <th>Status</th>
-                    <th>Actions</th>
                   </tr>
                 </thead>
                 <tbody>
@@ -301,20 +338,6 @@ export function FileUpload() {
                       <td>{file.semester}</td>
                       <td className={`status-${file.status.toLowerCase()}`}>
                         {file.status}
-                      </td>
-                      <td>
-                        <button
-                          className="action-link approve"
-                          onClick={() => handleStatusChange(index, "Approved")}
-                        >
-                          Approve
-                        </button>
-                        <button
-                          className="action-link disapprove"
-                          onClick={() => handleStatusChange(index, "Disapproved")}
-                        >
-                          Disapprove
-                        </button>
                       </td>
                     </tr>
                   ))}
