@@ -38,6 +38,7 @@ export default function FileUpload() {
   // const [isMounted, setIsMounted] = useState(false);
 
   const USER_EMAIL = user?.email || ""; // <-- CORRECT: outside, dynamically using user
+  const USER_ROLE = user?.role || ""; // <-- CORRECT: outside, dynamically using user
 
   /*
   useEffect(() => {

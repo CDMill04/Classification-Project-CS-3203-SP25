@@ -4,13 +4,13 @@
     "name": "John Doe",
     "email": "johndoe@example.com",
     "password": "password",
-    "role": "None"
+    "role": "Teacher"
   },
   {
     "id": 1745889134572,
     "name": "Jane Doe",
     "email": "janedoe@example.com",
     "password": "password",
-    "role": "None"
+    "role": "Admin"
   }
 ]
