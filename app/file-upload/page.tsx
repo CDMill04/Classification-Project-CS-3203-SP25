@@ -11,6 +11,8 @@ import SignUpModal from "@/app/components/modals/SignUpPage";
 import useCurrentUser from "@/app/hooks/useCurrentUser";
 import users from "@/app/data/users.json"; // Assuming you have a JSON file with user data
 
+// File sanitization function for CWE-79: Improper Neutralization of Input During Web Page Generation ('Cross-site Scripting')
+// This function replaces unsafe characters in filenames with underscores and limits the length to 100 characters.
 const sanitizeFilename = (name: string) => {
   const safeName = name
     .replace(/[^a-zA-Z0-9.\-_]/g, '_')    // Allow only safe characters
@@ -60,8 +62,6 @@ export function FileUpload() {
     const user = users.find(u => u.email === USER_EMAIL);
     return user ? user.role : null;
   }
-
-  const USER_ROLE = getRoleByEmail(USER_EMAIL); // <-- CORRECT: outside, dynamically using user
 
   /*
   useEffect(() => {
