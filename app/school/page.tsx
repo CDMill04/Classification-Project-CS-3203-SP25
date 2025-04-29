@@ -117,7 +117,7 @@ export default function SchoolManagement() {
       { /* Top Bar */}
       <div className="sticky top-0 z-20 flex justify-between items-center p-4 bg-background border-b">
         <div>
-          <h2 className="text-2xl font-bold">Dashboard</h2>
+          <h2 className="text-2xl font-bold">School</h2>
         </div>
         <Button
           onClick={openLogin}
