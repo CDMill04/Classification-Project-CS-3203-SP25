@@ -1,0 +1,18 @@
+[
+  {
+    "id": 1745889763757,
+    "name": "John Doe",
+    "email": "johndoe@example.com",
+    "password": "password",
+    "role": "admin",
+    "school": "OU"
+  },
+  {
+    "id": 1745892675852,
+    "name": "Jane Doe",
+    "email": "janedoe@example.com",
+    "password": "password",
+    "role": "",
+    "school": ""
+  }
+]

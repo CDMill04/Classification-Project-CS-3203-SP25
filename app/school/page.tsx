@@ -1,70 +1,123 @@
-'use client';
+"use client";
 
-import { useState, useEffect } from 'react';
-import { Button } from '@/app/components/ui/button';
-import { Input } from '@/app/components/ui/input';
-import Layout from '@/app/components/Layout';
-import LoginModal from '@/app/components/modals/loginPage';
-import SignUpModal from '@/app/components/modals/SignUpPage';
+import { useState, useEffect } from "react";
+import Layout from "@/app/components/Layout";
+import { Button } from "@/app/components/ui/button";
+import useCurrentUser from "@/app/hooks/useCurrentUser";
+import LoginModal from "@/app/components/modals/loginPage";
+import SignUpModal from "@/app/components/modals/SignUpPage";
+import { getAllSchools, getAllUsers, createSchool, joinSchool, updateUser, promoteToAdmin, getLessonPlansForSchool } from "./actions";
 
 export default function SchoolManagement() {
-  const [role, setRole] = useState<'admin' | 'teacher'>('admin');
-
-  const [schoolName, setSchoolName] = useState('');
-  const [schools, setSchools] = useState<string[]>([]);
-
-  const [selectedSchool, setSelectedSchool] = useState<string>('');
-  const [joinedSchool, setJoinedSchool] = useState<string | null>(null);
-
+  const { user, isMounted } = useCurrentUser();
+  const [loading, setLoading] = useState(true);
+  const [view, setView] = useState<"choose" | "create" | "join" | "admin" | "teacher">("choose");
+  const [schoolName, setSchoolName] = useState("");
+  const [availableSchools, setAvailableSchools] = useState<string[]>([]);
+  const [selectedSchool, setSelectedSchool] = useState("");
+  const [myRole, setMyRole] = useState("");
+  const [mySchool, setMySchool] = useState("");
+  const [lessonPlans, setLessonPlans] = useState<any[]>([]);
   const [isLoginOpen, setLoginOpen] = useState(false);
   const [isSignUpOpen, setSignUpOpen] = useState(false);
-  const [isMounted, setIsMounted] = useState(false);
+  const [logoutMessage, setLogoutMessage] = useState(false);
+
+  
+  
+    const openLogin = () => {
+      setLoginOpen(true);
+      setSignUpOpen(false);
+    };
+  
+    const openSignUp = () => {
+      setLoginOpen(false);
+      setSignUpOpen(true);
+    };
+  
+    const closeAllModals = () => {
+      setLoginOpen(false);
+      setSignUpOpen(false);
+    };
+
+
 
   useEffect(() => {
-    setIsMounted(true);
-  }, []);
-
-  const openLogin = () => {
-    setLoginOpen(true);
-    setSignUpOpen(false);
-  };
-
-  const openSignUp = () => {
-    setLoginOpen(false);
-    setSignUpOpen(true);
-  };
-
-  const closeAllModals = () => {
-    setLoginOpen(false);
-    setSignUpOpen(false);
-  };
-
-  const handleCreateSchool = () => {
-    if (schoolName.trim() !== '') {
-      setSchools(prev => [...prev, schoolName]);
-      setSchoolName('');
+    if (user) {
+      init();
     }
-  };
+  }, [user]);
 
-  const handleJoinSchool = () => {
-    if (selectedSchool) {
-      setJoinedSchool(selectedSchool);
+  const init = async () => {
+    const allUsers = await getAllUsers();
+    const currentUser = allUsers.find((u: any) => u.email === user?.email);
+
+    if (currentUser?.role && currentUser?.school) {
+      setMyRole(currentUser.role);
+      setMySchool(currentUser.school);
+      setView(currentUser.role === "admin" ? "admin" : "teacher");
+      loadLessonPlans();
     }
+    setLoading(false);
   };
 
-  const fakeLessonPlans: Record<string, string[]> = {
-    'OU': ['Module 1 - Software Product', 'Module 2 - Agile Software Engineering', 'Module 3 - DevOps and Code Management'] 
+  const handleCreate = async () => {
+    if (!schoolName) return;
+    await createSchool(schoolName, user?.email!);
+    await updateUser(user?.email!, { role: "admin", school: schoolName });
+    setMyRole("admin");
+    setMySchool(schoolName);
+    setView("admin");
   };
 
-  const lessonPlans = joinedSchool ? fakeLessonPlans[joinedSchool] || [] : [];
+  const handleJoin = async () => {
+    if (!selectedSchool) return;
+    await joinSchool(selectedSchool, user?.email!);
+    await updateUser(user?.email!, { role: "teacher", school: selectedSchool });
+    setMyRole("teacher");
+    setMySchool(selectedSchool);
+    setView("teacher");
+  };
 
-  if (!isMounted) return null;
+  const loadSchools = async () => {
+    const schools = await getAllSchools();
+    setAvailableSchools(schools.map((s: any) => s.name));
+  };
+
+  const promoteTeacher = async (email: string) => {
+    await promoteToAdmin(mySchool, email);
+    await updateUser(email, { role: "admin" });
+    init();
+  };
+
+  const loadLessonPlans = async () => {
+    const plans = await getLessonPlansForSchool(mySchool); // make this a fetch user uploads thing tommorow
+    setLessonPlans(plans);
+  };
+
+  if (!isMounted || loading) {
+    return (
+      <Layout>
+        <div className="flex flex-1 flex-col items-center justify-start text-center px-8 pt-16 h-[calc(100vh-64px)]">
+          <img 
+            src="/broken_pencil.png" 
+            alt="Broken Pencil" 
+            className="w-64 h-64 mb-6 object-contain" 
+          />
+          <p className="text-2xl font-semibold text-muted-foreground">
+            Oops! You must be logged in to view the Dashboard.
+          </p>
+        </div>
+      </Layout>
+    );
+  }
 
   return (
     <Layout>
-      {/* Top Bar */}
+      { /* Top Bar */}
       <div className="sticky top-0 z-20 flex justify-between items-center p-4 bg-background border-b">
-        <h2 className="text-2xl font-bold">School Management</h2>
+        <div>
+          <h2 className="text-2xl font-bold">Dashboard</h2>
+        </div>
         <Button
           onClick={openLogin}
           className="bg-[hsl(var(--primary))] text-white hover:opacity-90 rounded-lg"
@@ -72,131 +125,115 @@ export default function SchoolManagement() {
           Log In
         </Button>
       </div>
-
-
-      {/* Main Content */}
-      <div className="grid grid-cols-1 gap-6 mt-6">
-        {/* Role Simulator */}
-        <div className="p-6 rounded-2xl border shadow bg-card space-y-4">
-          <h2 className="text-xl font-semibold">Role Simulator</h2>
-          <div className="flex space-x-2">
-            <Button
-              variant={role === 'admin' ? 'default' : 'outline'}
-              onClick={() => setRole('admin')}
-            >
-              Admin
-            </Button>
-            <Button
-              variant={role === 'teacher' ? 'default' : 'outline'}
-              onClick={() => setRole('teacher')}
-            >
-              Teacher
-            </Button>
-          </div>
-          <p className="text-sm text-muted-foreground">
-            Current role: {role}
-          </p>
+      {/* Success Message */}
+      {logoutMessage && (
+        <div className="p-4 bg-green-100 text-green-800 text-center rounded-lg mt-6 mx-4">
+          Logout successful!
         </div>
+      )}
+      <div className="p-6">
+        {view === "choose" && (
+          <div className="flex flex-col items-center">
+            <h2 className="text-2xl mb-4">Welcome! Choose an option:</h2>
+            <div className="flex space-x-4">
+              <Button onClick={() => setView("create")}>Create School</Button>
+              <Button onClick={() => { setView("join"); loadSchools(); }}>Join School</Button>
+            </div>
+          </div>
+        )}
 
-        {/* Admin: Create School */}
-        {role === 'admin' && (
-          <div className="p-6 rounded-2xl border shadow bg-card space-y-4">
-            <h2 className="text-xl font-semibold">Create a School</h2>
-            <Input
-              placeholder="Enter school name"
+        {view === "create" && (
+          <div className="flex flex-col items-center">
+            <h2 className="text-2xl mb-4">Create a New School</h2>
+            <input
+              className="border p-2 mb-4 rounded"
+              placeholder="School Name"
               value={schoolName}
               onChange={(e) => setSchoolName(e.target.value)}
             />
-            <Button onClick={handleCreateSchool}>Create School</Button>
-            {schools.length > 0 && (
-              <div>
-                <h3 className="text-lg font-medium mt-4">Existing Schools:</h3>
-                <ul className="list-disc list-inside">
-                  {schools.map((school, index) => (
-                    <li key={index}>{school}</li>
-                  ))}
-                </ul>
-              </div>
-            )}
+            <Button onClick={handleCreate}>Create School</Button>
           </div>
         )}
 
-        {/* Teacher: Join School */}
-        {role === 'teacher' && (
-          <div className="p-6 rounded-2xl border shadow bg-card space-y-4">
-            <h2 className="text-xl font-semibold">Join a School</h2>
-            {schools.length > 0 ? (
-              <>
-                <select
-                  value={selectedSchool}
-                  onChange={(e) => setSelectedSchool(e.target.value)}
-                  className="border rounded p-2 w-full"
-                >
-                  <option value="">Select a school</option>
-                  {schools.map((school, index) => (
-                    <option key={index} value={school}>
-                      {school}
-                    </option>
-                  ))}
-                </select>
-                <Button onClick={handleJoinSchool} disabled={!selectedSchool}>
-                  Join
-                </Button>
-              </>
-            ) : (
-              <p className="text-muted-foreground">
-                No schools available. Please wait for an admin to create one.
-              </p>
-            )}
+        {view === "join" && (
+          <div className="flex flex-col items-center">
+            <h2 className="text-2xl mb-4">Join an Existing School</h2>
+            <select
+              className="border p-2 mb-4 rounded"
+              value={selectedSchool}
+              onChange={(e) => setSelectedSchool(e.target.value)}
+            >
+              <option value="">Select a school</option>
+              {availableSchools.map((school, idx) => (
+                <option key={idx} value={school}>{school}</option>
+              ))}
+            </select>
+            <Button onClick={handleJoin}>Join School</Button>
           </div>
         )}
 
-        {/* Teacher: View Lesson Plans */}
-        {role === 'teacher' && joinedSchool && (
-          <div className="p-6 rounded-2xl border shadow bg-card space-y-4">
-            <h2 className="text-xl font-semibold">
-              Lesson Plans for {joinedSchool}
-            </h2>
-            {lessonPlans.length > 0 ? (
-              <ul className="list-disc list-inside">
-                {lessonPlans.map((lesson, index) => (
-                  <li key={index}>{lesson}</li>
-                ))}
-              </ul>
-            ) : (
-              <p className="text-muted-foreground">
-                No lesson plans available for this school yet.
-              </p>
-            )}
+        {view === "admin" && (
+          <div>
+            <h2 className="text-2xl mb-4">Admin Dashboard for {mySchool}</h2>
+            <p>You are an admin. Promote teachers here.</p>
+            <div>
+              {lessonPlans.length === 0 ? (
+                <p>No lesson plans available yet.</p>
+              ) : (
+                <div>
+                  <h3 className="text-xl">Lesson Plans</h3>
+                  <ul>
+                    {lessonPlans.map((plan, idx) => (
+                      <li key={idx}>
+                        {plan.filename}
+                        <Button onClick={() => promoteTeacher(plan.email)}>Promote to Admin</Button>
+                      </li>
+                    ))}
+                  </ul>
+                </div>
+              )}
+            </div>
           </div>
         )}
 
-        {/* Teacher: No School Joined */}
-        {role === 'teacher' && !joinedSchool && (
-          <div className="p-6 rounded-2xl border shadow bg-card">
-            <p className="text-muted-foreground">
-              You have not joined a school yet.
-            </p>
+        {view === "teacher" && (
+          <div>
+            <h2 className="text-2xl mb-4">Teacher Dashboard for {mySchool}</h2>
+            <p>You can view lesson plans from other teachers.</p>
+            <div>
+              {lessonPlans.length === 0 ? (
+                <p>No lesson plans available yet.</p>
+              ) : (
+                <div>
+                  <h3 className="text-xl">Lesson Plans</h3>
+                  <ul>
+                    {lessonPlans.map((plan, idx) => (
+                      <li key={idx}>{plan.filename}</li>
+                    ))}
+                  </ul>
+                </div>
+              )}
+            </div>
           </div>
         )}
       </div>
-
       {/* Login and Sign Up Modals */}
-
-      {isMounted && (
-        <>
-          <LoginModal
-            isOpen={isLoginOpen}
-            onClose={closeAllModals}
-            openSignUp={openSignUp}
-          />
-          <SignUpModal
-            isOpen={isSignUpOpen}
-            onClose={closeAllModals}
-            openLogin={openLogin}
-          />
-        </>
-      )}
+            <>
+              <LoginModal
+                isOpen={isLoginOpen}
+                onClose={closeAllModals}
+                openSignUp={openSignUp}
+                onLoginSuccess={() => {
+                  closeAllModals();
+                  window.location.reload();
+                }}
+              />
+              <SignUpModal
+                isOpen={isSignUpOpen}
+                onClose={closeAllModals}
+                openLogin={openLogin}
+              />
+            </>
     </Layout>
   );
 }
