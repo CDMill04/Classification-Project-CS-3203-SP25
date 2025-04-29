@@ -119,12 +119,14 @@ export default function SchoolManagement() {
         <div>
           <h2 className="text-2xl font-bold">Dashboard</h2>
         </div>
+        {!user && (
         <Button
           onClick={openLogin}
           className="bg-[hsl(var(--primary))] text-white hover:opacity-90 rounded-lg"
         >
           Log In
         </Button>
+        )}
       </div>
       {/* Success Message */}
       {logoutMessage && (
