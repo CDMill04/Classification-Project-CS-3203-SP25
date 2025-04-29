@@ -43,10 +43,10 @@ export default function Sidebar() {
         <nav className="flex flex-col gap-2">
           {[
             { href: "/dashboard", label: "Dashboard" },
-            { href: "/file-upload", label: "Upload" },
-            { href: "/review", label: "Review" },
-            { href: "/profile", label: "Profile" },
             { href: "/school", label: "School" },
+            { href: "/file-upload", label: "Upload" },
+            { href: "/classy", label: "Classy AI" },
+            { href: "/profile", label: "Profile" },
           ].map(({ href, label }) => (
             <Link
               key={href}

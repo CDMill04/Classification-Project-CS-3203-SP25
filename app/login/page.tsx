@@ -25,6 +25,21 @@ export default function LoginPage() {   // This is much like the login modal. Th
       return;
     }
 
+    const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/; // This is a set of invalid inputs
+    const hasScript = /<script.*?>.*?<\/script>/gi;
+
+    if (!emailRegex.test(email)) { // Make sure the email is not an attack
+      setError("Please enter a valid email address.");
+      setLoading(false);
+      return;
+    }
+
+    if (hasScript.test(email) || hasScript.test(password)) { // Make sure there is no attempted script injection
+      setError("Input contains restricted content.");
+      setLoading(false);
+      return;
+    }
+
     try {    // Try to see if there is a login for those credentials
       const res = await fetch('/api/users');
       const users = await res.json();
