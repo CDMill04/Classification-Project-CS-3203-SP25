@@ -66,92 +66,90 @@ export default function ClassyPage() {
 
   return (
     <Layout>
-      <div className="sticky top-0 z-20 flex justify-between items-center p-4 bg-background border-b">
-        <div>
+      <div className="flex flex-col min-h-screen relative">
+        {/* Top Bar */}
+        <div className="sticky top-0 z-20 flex justify-between items-center p-4 bg-background border-b">
           <h2 className="text-2xl font-bold">Classy AI</h2>
+          <Button
+            onClick={openLogin}
+            className="bg-[hsl(var(--primary))] text-white hover:opacity-90 rounded-lg"
+          >
+            Log In
+          </Button>
         </div>
-        {!user && (
-        <Button
-          onClick={openLogin}
-          className="bg-[hsl(var(--primary))] text-white hover:opacity-90 rounded-lg"
-        >
-          Log In
-        </Button>
-        )}
-      </div>
 
-      {/* Success Message */}
-      {logoutMessage && (
-        <div className="p-4 bg-green-100 text-green-800 text-center rounded-lg mt-6 mx-4">
-          Logout successful!
-        </div>
-      )}
-
-      {/* Main Page Content */}
-      <div className="p-6 mt-6 space-y-6">
-        {!user ? (
-          <div className="flex flex-1 flex-col items-center justify-start text-center px-8 pt-16 h-[calc(100vh-64px)]">
-          <img 
-            src="/broken_pencil.png" 
-            alt="Broken Pencil" 
-            className="w-64 h-64 mb-6 object-contain" 
-          />
-          <p className="text-2xl font-semibold text-muted-foreground">
-            Oops! You must be logged in to use Classy.
-          </p>
-        </div>
-        ) : (
-          <>
-            {/* File Selector */}
-            <div>
-              <label className="block mb-2 font-semibold">Select a file to review:</label>
-              <select
-                className="w-full p-2 border rounded-lg mb-4"
-                value={selectedFile}
-                onChange={(e) => setSelectedFile(e.target.value)}
-              >
-                <option value="">-- Choose a file --</option>
-                {uploads.map((file, i) => (
-                  <option key={i} value={file.filename}>
-                    {file.filename}
-                  </option>
-                ))}
-              </select>
+        {/* Page Content */}
+        <div className="flex-1 overflow-y-auto p-6 space-y-6">
+          {!user ? (
+            <div className="flex flex-col items-center justify-center h-full text-center">
+              <img src="/broken_pencil.png" alt="Broken Pencil" className="w-64 h-64 mb-6 object-contain" />
+              <p className="text-2xl font-semibold text-muted-foreground">
+                Oops! You must be logged in to use Classy.
+              </p>
             </div>
+          ) : (
+            <>
+              {feedback && (
+                <div className="p-4 bg-muted rounded-lg shadow text-muted-foreground whitespace-pre-wrap">
+                  <h3 className="text-xl font-semibold mb-4">Classy's Feedback:</h3>
+                  {feedback}
+                </div>
+              )}
+            </>
+          )}
+        </div>
 
-            {/* Text Input */}
-            <div>
-              <label className="block mb-2 font-semibold">Enter custom instructions (optional):</label>
-              <input
-                type="text"
-                placeholder="e.g., Focus on grammar issues"
-                value={customMessage}
-                onChange={(e) => setCustomMessage(e.target.value)}
-                className="w-full p-2 border rounded-lg"
-              />
-            </div>
-
-            {/* Submit Button */}
-            <Button
-              onClick={handleSubmit}
-              className="mt-4 bg-[hsl(var(--primary))] text-white hover:opacity-90 rounded-lg"
-              disabled={!selectedFile || loading}
-            >
-              {loading ? 'Thinking...' : 'Generate Feedback'}
-            </Button>
-
-            {/* Feedback Output */}
-            {feedback && (
-              <div className="mt-6 p-4 bg-muted rounded-lg shadow text-muted-foreground whitespace-pre-wrap">
-                <h3 className="text-xl font-semibold mb-4">Classy's Feedback:</h3>
-                {feedback}
+        {/* Sticky Input Section */}
+        {user && (
+          <div className="sticky bottom-0 bg-background p-4 border-t flex items-end justify-between">
+            <div className="flex flex-col gap-4 w-full pr-8"> {/* padding-right for Classy */}
+              <div>
+                <label className="block mb-2 font-semibold">Select a file to review:</label>
+                <select
+                  className="w-full p-2 border rounded-lg"
+                  value={selectedFile}
+                  onChange={(e) => setSelectedFile(e.target.value)}
+                >
+                  <option value="">-- Choose a file --</option>
+                  {uploads.map((file, i) => (
+                    <option key={i} value={file.filename}>
+                      {file.filename}
+                    </option>
+                  ))}
+                </select>
               </div>
-            )}
-          </>
+
+              <div>
+                <label className="block mb-2 font-semibold">Enter custom instructions (optional):</label>
+                <input
+                  type="text"
+                  placeholder="e.g., Focus on grammar issues"
+                  value={customMessage}
+                  onChange={(e) => setCustomMessage(e.target.value)}
+                  className="w-full p-2 border rounded-lg"
+                />
+              </div>
+
+              <Button
+                onClick={handleSubmit}
+                className="bg-[hsl(var(--primary))] text-white hover:opacity-90 rounded-lg self-start"
+                disabled={!selectedFile || loading}
+              >
+                {loading ? 'Thinking...' : 'Generate Feedback'}
+              </Button>
+            </div>
+
+            {/* Classy icon inside the bar */}
+            <img
+              src="/ClassyLogo.png"
+              alt="Classy Pencil"
+              className="w-52 h-52 object-contain ml-4"
+            />
+          </div>
         )}
       </div>
 
-    {/* Login and Sign Up Modals */}
+      {/* Login and Sign Up Modals */}
       <>
         <LoginModal
           isOpen={isLoginOpen}
