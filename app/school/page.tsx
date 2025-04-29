@@ -58,7 +58,6 @@ export default function SchoolManagement() {
       setMySchool(currentUser.school);
       setView(currentUser.role === "admin" ? "admin" : "teacher");
       loadLessonPlans();
-      setNotification("School Successfully Created!");
     }
     setLoading(false);
   };
@@ -70,6 +69,7 @@ export default function SchoolManagement() {
     setMyRole("admin");
     setMySchool(schoolName);
     setView("admin");
+    setNotification("School Successfully Created!");
   };
 
   const handleJoin = async () => {
