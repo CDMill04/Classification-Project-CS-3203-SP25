@@ -9,6 +9,7 @@ import LoginModal from "@/app/components/modals/loginPage";
 import SignUpModal from "@/app/components/modals/SignUpPage";
 
 import useCurrentUser from "@/app/hooks/useCurrentUser";
+import users from "@/app/data/users.json"; // Assuming you have a JSON file with user data
 
 const sanitizeFilename = (name: string) => {
   const safeName = name
@@ -32,12 +33,19 @@ export default function FileUpload() {
   const [error, setError] = useState("");
   const [uploadSuccess, setUploadSuccess] = useState(false);
   const [loading, setLoading] = useState(true);
+  const [isTeacher, setIsTeacher] = useState(true);
 
   const [isLoginOpen, setLoginOpen] = useState(false);
   const [isSignUpOpen, setSignUpOpen] = useState(false);
   // const [isMounted, setIsMounted] = useState(false);
 
   const USER_EMAIL = user?.email || ""; // <-- CORRECT: outside, dynamically using user
+  function getRoleByEmail(USER_EMAIL: string) {
+    const user = users.find(u => u.email === USER_EMAIL);
+    return user ? user.role : null;
+  }
+
+  const USER_ROLE = getRoleByEmail(USER_EMAIL); // <-- CORRECT: outside, dynamically using user
 
   /*
   useEffect(() => {
@@ -54,6 +62,9 @@ export default function FileUpload() {
   // Fetch uploads when user is ready
   useEffect(() => {
     if (USER_EMAIL) {
+      if (getRoleByEmail(USER_EMAIL) === "Admin") {
+        setIsTeacher(false);
+      }
       console.log("Fetching uploads...");
       fetchUploads();
     }
@@ -192,6 +203,17 @@ export default function FileUpload() {
             Oops! You must be logged in to view your uploads.
           </p>
         </div>
+        ) : !isTeacher ? (
+          <div className = "flex flex-col items-center justify-center text-center px-9 pt-16 h-[calc(100vh-64px)]">
+            <img 
+              src="/sad3.webp"
+              alt="Admin"
+              className="w-64 h-64 mb-6 object-contain"
+            />
+            <p className="text-2xl font-semibold text-muted-foreground">
+              You are logged in as an Admin. Wait for the admin view feature to be implemented.
+            </p>
+          </div>
         ) : (
           <>
             <div className="upload-section">
