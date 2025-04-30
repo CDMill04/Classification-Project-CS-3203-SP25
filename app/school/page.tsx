@@ -115,8 +115,23 @@ export function SchoolManagement() {
 
   if (!isMounted || loading) {
     return (
-      <Layout>
-        <div className="flex flex-1 flex-col items-center justify-start text-center px-8 pt-16 h-[calc(100vh-64px)]">
+      <Layout> 
+        { /* Top Bar */}
+      <div className="sticky top-0 z-20 flex justify-between items-center p-4 bg-background border-b">
+        <div>
+          <h2 className="text-2xl font-bold">School</h2>
+        </div>
+        {!user && (
+        <Button
+          onClick={openLogin}
+          className="bg-[hsl(var(--primary))] text-white hover:opacity-90 rounded-lg"
+        >
+          Log In
+        </Button>
+        )}
+      </div>
+      <div className="p-6 mt-6">
+      <div className="flex flex-1 flex-col items-center justify-start text-center px-8 pt-16 h-[calc(100vh-64px)]">
           <img 
             src="/broken_pencil.png" 
             alt="Broken Pencil" 
@@ -125,6 +140,26 @@ export function SchoolManagement() {
           <p className="text-2xl font-semibold text-muted-foreground">
             Oops! You must be logged in to view your school.
           </p>
+        </div>
+        {/* Login and Sign Up Modals */}
+      {isMounted && (
+        <>
+          <LoginModal
+            isOpen={isLoginOpen}
+            onClose={closeAllModals}
+            openSignUp={openSignUp}
+            onLoginSuccess={() => {
+              closeAllModals();
+              window.location.reload();
+            }}
+          />
+          <SignUpModal
+            isOpen={isSignUpOpen}
+            onClose={closeAllModals}
+            openLogin={openLogin}
+          />
+        </>
+      )}
         </div>
       </Layout>
     );
