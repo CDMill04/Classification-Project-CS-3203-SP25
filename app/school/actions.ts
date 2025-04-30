@@ -4,8 +4,10 @@ import fs from "fs/promises";
 import path from "path";
 
 const DATA_FOLDER = path.join(process.cwd(), "app", "data");
-const USER_FILE = path.join(process.cwd(), "app", "data", "users.json");
-const METADATA_FOLDER = path.join(process.cwd(), "app", "data", "user-upload-data");
+const USER_FILE = path.join(DATA_FOLDER, "users.json");
+const SCHOOLS_FILE = path.join(DATA_FOLDER, "schools.json");
+const METADATA_FOLDER = path.join(DATA_FOLDER, "user-upload-data");
+
 
 export async function fetchAllUsers() {
   try {
@@ -114,14 +116,41 @@ export async function joinSchool(schoolName: string, teacherEmail: string) {
   }
 }
 
-export async function promoteToAdmin(schoolName: string, email: string) {
+export async function getTeachersForSchool(schoolName: string) {
   const schools = await getAllSchools();
+  const users = await getAllUsers();
+  const school = schools.find((s: any) => s.name === schoolName);
+  if (!school) return [];
+  return users.filter((u: any) => school.teachers.includes(u.email));
+}
+
+export async function getAdminsForSchool(schoolName: string) {
+  const schools = await getAllSchools();
+  const users = await getAllUsers();
+  const school = schools.find((s: any) => s.name === schoolName);
+  if (!school) return [];
+  return users.filter((u: any) => school.admins.includes(u.email));
+}
+
+export async function promoteToAdmin(schoolName: string, email: string) {
+  const schools = await readJSON(SCHOOLS_FILE);
+  const users = await readJSON(USER_FILE);
   const school = schools.find((s: any) => s.name === schoolName);
   if (school) {
+    // Add to admins if not already present
     if (!school.admins.includes(email)) {
       school.admins.push(email);
-      await writeJSON(schoolsPath, schools);
     }
+    // Remove from teachers if present
+    school.teachers = school.teachers.filter((e: string) => e !== email);
+    await writeJSON(SCHOOLS_FILE, schools);
+  }
+
+  // Update user's role to admin
+  const userIndex = users.findIndex((u: any) => u.email === email);
+  if (userIndex >= 0) {
+    users[userIndex].role = "admin";
+    await writeJSON(USER_FILE, users);
   }
 }
 
@@ -147,13 +176,13 @@ export async function fetchUserUploads(userEmail: string) {
 }
 
 export async function getLessonPlansForSchool(schoolName: string) {
-  const schools = await getAllSchools();
+  const schools = await readJSON(SCHOOLS_FILE);
   const school = schools.find((s: any) => s.name === schoolName);
   if (school) {
     const lessonPlans = [];
     for (const teacherEmail of [...school.admins, ...school.teachers]) {
       const uploads = await fetchUserUploads(teacherEmail);
-      lessonPlans.push(...uploads);
+      lessonPlans.push(...uploads.map((upload: any) => ({ ...upload, email: teacherEmail })));
     }
     return lessonPlans;
   }
