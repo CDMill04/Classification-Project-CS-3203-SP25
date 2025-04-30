@@ -18,6 +18,7 @@ export default function DashboardPage() {
         allowList={[
           "https://lms.example.edu",
           "http://localhost:3000",
+          "https://classification-project-cs-3203-sp-25-iota.vercel.app",
         ]}
       />
 
