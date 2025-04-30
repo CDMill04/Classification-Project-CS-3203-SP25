@@ -9,7 +9,7 @@
     "lint": "next lint",
     "postinstall": "echo 'Postinstall script executed'",
     "test": "jest",
-    "test:ui": "jest --config ./ui-tests/jest.ui.config.ts"
+    "test:dashboard": "jest --config jest.config.ts --testPathPattern=dashboard"
   },
   "dependencies": {
     "@hookform/resolvers": "^3.9.1",
