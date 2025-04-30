@@ -6,26 +6,38 @@ import { Button } from "@/app/components/ui/button";
 import useCurrentUser from "@/app/hooks/useCurrentUser";
 import LoginModal from "@/app/components/modals/loginPage";
 import SignUpModal from "@/app/components/modals/SignUpPage";
-import { getAllSchools, getAllUsers, createSchool, joinSchool, updateUser, promoteToAdmin, getLessonPlansForSchool } from "./actions";
+import { getAllSchools, getAllUsers, createSchool, joinSchool, updateUser, promoteToAdmin, getLessonPlansForSchool, getTeachersForSchool, getAdminsForSchool } from "./actions";
 import Notification from "@/app/components/Notification";
-
-
-export default function SchoolManagement() {
+import { OriginGuard } from "@/app/OriginGuard";
+export default function FileUploadPage() {
+  return (
+    <>
+      <OriginGuard               /* ← the referrer check */
+        allowList={[
+          "https://lms.example.edu",
+          "http://localhost:3000",
+        ]}
+      />
+      <SchoolManagement />             {/* ← your real UI */}
+    </>
+  );
+}
+export function SchoolManagement() {
   const { user, isMounted } = useCurrentUser();
   const [loading, setLoading] = useState(true);
   const [view, setView] = useState<"choose" | "create" | "join" | "admin" | "teacher">("choose");
   const [schoolName, setSchoolName] = useState("");
   const [availableSchools, setAvailableSchools] = useState<string[]>([]);
   const [selectedSchool, setSelectedSchool] = useState("");
-  const [myRole, setMyRole] = useState("");
   const [mySchool, setMySchool] = useState("");
   const [lessonPlans, setLessonPlans] = useState<any[]>([]);
   const [isLoginOpen, setLoginOpen] = useState(false);
   const [isSignUpOpen, setSignUpOpen] = useState(false);
   const [logoutMessage, setLogoutMessage] = useState(false);
-
+  const [teachers, setTeachers] = useState<any[]>([]);
+  const [admins, setAdmins] = useState<any[]>([]);
   const [notification, setNotification] = useState<string | null>(null);
-  
+
     const openLogin = () => {
       setLoginOpen(true);
       setSignUpOpen(false);
@@ -41,8 +53,6 @@ export default function SchoolManagement() {
       setSignUpOpen(false);
     };
 
-
-
   useEffect(() => {
     if (user) {
       init();
@@ -52,34 +62,39 @@ export default function SchoolManagement() {
   const init = async () => {
     const allUsers = await getAllUsers();
     const currentUser = allUsers.find((u: any) => u.email === user?.email);
-
+  
     if (currentUser?.role && currentUser?.school) {
-      setMyRole(currentUser.role);
       setMySchool(currentUser.school);
       setView(currentUser.role === "admin" ? "admin" : "teacher");
-      loadLessonPlans();
+      const schoolTeachers = await getTeachersForSchool(currentUser.school);
+      setTeachers(schoolTeachers);
+      const schoolAdmins = await getAdminsForSchool(currentUser.school);
+      setAdmins(schoolAdmins);
+      const plans = await getLessonPlansForSchool(currentUser.school); 
+      setLessonPlans(plans);
     }
     setLoading(false);
   };
+  
 
   const handleCreate = async () => {
     if (!schoolName) return;
     await createSchool(schoolName, user?.email!);
     await updateUser(user?.email!, { role: "admin", school: schoolName });
-    setMyRole("admin");
     setMySchool(schoolName);
     setView("admin");
     setNotification("School Successfully Created!");
+    location.reload();
   };
 
   const handleJoin = async () => {
     if (!selectedSchool) return;
     await joinSchool(selectedSchool, user?.email!);
     await updateUser(user?.email!, { role: "teacher", school: selectedSchool });
-    setMyRole("teacher");
     setMySchool(selectedSchool);
     setView("teacher");
     setNotification("Successfully joined " + selectedSchool + "!");
+    location.reload();
   };
 
   const loadSchools = async () => {
@@ -90,11 +105,11 @@ export default function SchoolManagement() {
   const promoteTeacher = async (email: string) => {
     await promoteToAdmin(mySchool, email);
     await updateUser(email, { role: "admin" });
-    init();
+    await init();
   };
 
   const loadLessonPlans = async () => {
-    const plans = await getLessonPlansForSchool(mySchool); // make this a fetch user uploads thing tommorow
+    const plans = await getLessonPlansForSchool(mySchool); 
     setLessonPlans(plans);
   };
 
@@ -178,55 +193,99 @@ export default function SchoolManagement() {
           </div>
         )}
 
-        {view === "admin" && (
-          <div>
-            <h2 className="text-2xl mb-4">Admin Dashboard for {mySchool}</h2>
-            <p>You are an admin. Promote teachers here.</p>
-            <div>
-              {lessonPlans.length === 0 ? (
-                <p>No lesson plans available yet.</p>
-              ) : (
-                <div>
-                  <h3 className="text-xl">Lesson Plans</h3>
-                  <ul>
-                    {lessonPlans.map((plan, idx) => (
-                      <li key={idx}>
-                        {plan.filename}
-                        <Button onClick={() => promoteTeacher(plan.email)}>Promote to Admin</Button>
-                      </li>
-                    ))}
-                  </ul>
-                </div>
-              )}
-            </div>
-          </div>
-        )}
+{view === "admin" && (
+  <div>
+    <h2 className="text-2xl mb-4">Admin Dashboard for {mySchool}</h2>
+    <p className="mb-4">You are an admin. Promote teachers here.</p>
 
-        {view === "teacher" && (
-          <div>
-            <h2 className="text-2xl mb-4">Teacher Dashboard for {mySchool}</h2>
-            <p>You can view lesson plans from other teachers.</p>
-            <div>
-              {lessonPlans.length === 0 ? (
-                <p>No lesson plans available yet.</p>
-              ) : (
-                <div>
-                  <h3 className="text-xl">Lesson Plans</h3>
-                  <ul>
-                    {lessonPlans.map((plan, idx) => (
-                      <li key={idx}>{plan.filename}</li>
-                    ))}
-                  </ul>
-                </div>
-              )}
-            </div>
-          </div>
-        )}
+    <div className="mb-6">
+      <h3 className="text-xl font-semibold mb-2">Admins</h3>
+      {admins.length === 0 ? <p>No admins yet.</p> : (
+        <ul>
+          {admins.map((admin, idx) => (
+            <li key={idx} className="mb-2 flex justify-between items-center">
+              <span>{admin.email}</span>
+            </li>
+          ))}
+        </ul>
+      )}
+      <h3 className="text-xl font-semibold mb-2">Teachers</h3>
+      {teachers.length === 0 ? <p>No teachers yet.</p> : (
+        <ul>
+          {teachers.map((teacher, idx) => (
+            <li key={idx} className="mb-2 flex justify-between items-center">
+              <span>{teacher.email}</span>
+              <Button onClick={() => promoteTeacher(teacher.email)}>
+                Promote to Admin
+              </Button>
+            </li>
+          ))}
+        </ul>
+      )} 
+    </div>
+
+    <div>
+      <h3 className="text-xl font-semibold mb-2">Lesson Plans</h3>
+      {lessonPlans.length === 0 ? <p>No lesson plans yet.</p> : (
+        <ul>
+          {lessonPlans.map((plan, idx) => (
+            <li key={idx} className="mb-2">
+              {plan.filename} <span className="text-sm">({plan.email})</span>
+            </li>
+          ))}
+        </ul>
+      )}
+    </div>
+  </div>
+)}
+{view === "teacher" && (
+  <div>
+    <h2 className="text-2xl mb-4">Teacher Dashboard for {mySchool}</h2>
+    <p className="mb-4">You can view all lesson plans and teachers.</p>
+
+    <div className="mb-6">
+      <h3 className="text-xl font-semibold mb-2">Admins</h3>
+      {admins.length === 0 ? <p>No admins yet.</p> : (
+        <ul>
+          {admins.map((admin, idx) => (
+            <li key={idx} className="mb-2 flex justify-between items-center">
+              <span>{admin.email}</span>
+            </li>
+          ))}
+        </ul>
+      )}
+      <h3 className="text-xl font-semibold mb-2">Teachers</h3>
+      {teachers.length === 0 ? <p>No teachers yet.</p> : (
+        <ul>
+          {teachers.map((teacher, idx) => (
+            <li key={idx} className="mb-2 flex justify-between items-center">
+              <span>{teacher.email}</span>
+            </li>
+          ))}
+        </ul>
+      )} 
+    </div>
+
+    <div>
+      <h3 className="text-xl font-semibold mb-2">Lesson Plans</h3>
+      {lessonPlans.length === 0 ? <p>No lesson plans yet.</p> : (
+        <ul>
+          {lessonPlans.map((plan, idx) => (
+            <li key={idx}>
+              {plan.filename} <span className="text-sm">({plan.email})</span>
+            </li>
+          ))}
+        </ul>
+      )}
+    </div>
+  </div>
+)}
+
       </div>
 
       {/* Show Notification */}
       {notification && <Notification message={notification} onClose={() => setNotification(null)} />}
-      
+
       {/* Login and Sign Up Modals */}
       {isMounted && (
         <>
