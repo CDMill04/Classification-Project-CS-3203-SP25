@@ -118,10 +118,22 @@ export function FileUpload() {
     try {
       const updatedFiles = [...uploadedFiles];
       const fileToUpdate = updatedFiles[index];
-
+  
       fileToUpdate.status = newStatus;
-
+  
+      // Assuming `user.email` holds the email of the user who uploaded the file
+      const fileWithUser = { 
+        ...fileToUpdate, 
+        uploadedBy: user?.email || ""  // Add the `uploadedBy` field here
+      };
+  
       await updateFileStatus(USER_EMAIL, fileToUpdate.filename, newStatus);
+  
+      if (newStatus === "Approved") {
+        await sendApprovalEmail();
+      } else if (newStatus === "Disapproved") {
+        await sendDisapprovalEmail();
+      }
 
       setUploadedFiles(updatedFiles);
       console.log("Status updated successfully:", fileToUpdate);
@@ -130,6 +142,61 @@ export function FileUpload() {
       setError("Failed to update status. Please try again.");
     }
   };
+  
+
+  const sendApprovalEmail = async () => {
+    try {
+      const response = await fetch('/api/send-email', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({
+          userEmail: USER_EMAIL,  // Using USER_EMAIL here
+          subject: 'Your Curriculum Has Been Approved!',
+          text: `Hello, your curriculum Has Been Approved by the Admin. You can now view it in the File Upload Center.`,
+        }),
+      });
+  
+      if (response.ok) {
+        const result = await response.json();
+        console.log('Approval email sent successfully:', result.message);
+      } else {
+        const errorText = await response.text();
+        console.error('Error sending approval email:', errorText);
+      }
+    } catch (error: any) {
+      console.error('Error sending approval email:', error);
+    }
+  };
+
+  const sendDisapprovalEmail = async () => {
+    try {
+      const response = await fetch('/api/send-email', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({
+          userEmail: USER_EMAIL,  // Still using USER_EMAIL
+          subject: 'Your Curriculum Has Been Disapproved',
+          text: `Hello, your curriculum has been disapproved by the Admin. You may review it and re-upload if necessary.`,
+        }),
+      });
+  
+      if (response.ok) {
+        const result = await response.json();
+        console.log('Disapproval email sent successfully:', result.message);
+      } else {
+        const errorText = await response.text();
+        console.error('Error sending disapproval email:', errorText);
+      }
+    } catch (error: any) {
+      console.error('Error sending disapproval email:', error);
+    }
+  };
+  
+  
 
   const handleFileChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     if (e.target.files) {
@@ -196,6 +263,7 @@ export function FileUpload() {
       setUploading(false);
     }
   };
+
   return (
     <Layout>
       <div className="sticky top-0 z-20 flex justify-between items-center p-4 bg-background border-b">

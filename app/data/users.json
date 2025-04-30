@@ -14,5 +14,13 @@
     "password": "password",
     "role": "",
     "school": ""
+  },
+  {
+    "id": 1745973501971,
+    "name": "Kyle Clouse",
+    "email": "clouse1123@gmail.com",
+    "password": "Kyle1123",
+    "role": "None",
+    "school": "None"
   }
 ]
