@@ -10,6 +10,7 @@ import SignUpModal from "@/app/components/modals/SignUpPage";
 
 import useCurrentUser from "@/app/hooks/useCurrentUser";
 import users from "@/app/data/users.json"; // Assuming you have a JSON file with user data
+import { useSessionTimeout } from "../hooks/useSessionTimeout";
 
 // File sanitization function for CWE-20: Improper Input Validation
 // This function replaces unsafe characters in filenames with underscores and limits the length to 100 characters.
@@ -24,6 +25,7 @@ const sanitizeFilename = (name: string) => {
 
 import { OriginGuard } from "@/app/OriginGuard";
 export default function FileUploadPage() {
+  useSessionTimeout();
   return (
     <>
       <OriginGuard               /* ← the referrer check */
