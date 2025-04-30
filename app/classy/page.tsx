@@ -70,12 +70,14 @@ export default function ClassyPage() {
         {/* Top Bar */}
         <div className="sticky top-0 z-20 flex justify-between items-center p-4 bg-background border-b">
           <h2 className="text-2xl font-bold">Classy AI</h2>
+          {!user && (
           <Button
             onClick={openLogin}
             className="bg-[hsl(var(--primary))] text-white hover:opacity-90 rounded-lg"
           >
             Log In
           </Button>
+          )}
         </div>
 
         {/* Page Content */}
