@@ -18,7 +18,6 @@ export default function FileUploadPage() {
           "http://localhost:3000",
         ]}
       />
-
       <SchoolManagement />             {/* ← your real UI */}
     </>
   );
@@ -38,7 +37,6 @@ export function SchoolManagement() {
   const [teachers, setTeachers] = useState<any[]>([]);
   const [admins, setAdmins] = useState<any[]>([]);
   const [notification, setNotification] = useState<string | null>(null);
-
 
     const openLogin = () => {
       setLoginOpen(true);
@@ -125,7 +123,7 @@ export function SchoolManagement() {
             className="w-64 h-64 mb-6 object-contain" 
           />
           <p className="text-2xl font-semibold text-muted-foreground">
-            Oops! You must be logged in to view the Dashboard.
+            Oops! You must be logged in to view your school.
           </p>
         </div>
       </Layout>
@@ -137,14 +135,16 @@ export function SchoolManagement() {
       { /* Top Bar */}
       <div className="sticky top-0 z-20 flex justify-between items-center p-4 bg-background border-b">
         <div>
-          <h2 className="text-2xl font-bold">Dashboard</h2>
+          <h2 className="text-2xl font-bold">School</h2>
         </div>
+        {!user && (
         <Button
           onClick={openLogin}
           className="bg-[hsl(var(--primary))] text-white hover:opacity-90 rounded-lg"
         >
           Log In
         </Button>
+        )}
       </div>
       {/* Success Message */}
       {logoutMessage && (
@@ -285,7 +285,6 @@ export function SchoolManagement() {
 
       {/* Show Notification */}
       {notification && <Notification message={notification} onClose={() => setNotification(null)} />}
-
 
       {/* Login and Sign Up Modals */}
       {isMounted && (

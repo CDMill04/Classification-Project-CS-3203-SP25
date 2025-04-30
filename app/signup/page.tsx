@@ -20,8 +20,35 @@ export default function SignUpPage() {
     setError('');
     setLoading(true);
 
+    const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/; // This is a set of invalid inputs
+    const hasScript = /<script.*?>.*?<\/script>/gi;
+
     if (!name || !email || !password) {
       setError("Please fill out all fields.");
+      setLoading(false);
+      return;
+    }
+
+    if (!emailRegex.test(email)) { // Make sure the email is not an attack
+      setError("Please enter a valid email address.");
+      setLoading(false);
+      return;
+    }
+
+    if (hasScript.test(name) || hasScript.test(email) || hasScript.test(password)) { // Make sure there is no attempted script injection
+      setError("Input contains restricted content.");
+      setLoading(false);
+      return;
+    }
+
+    if (name.length > 100) { // Set a basic max name length
+      setError("Name is too long.");
+      setLoading(false);
+      return;
+    }
+
+    if (password.length < 6 || password.length > 100) { // Finally, have a basic password security check
+      setError("Password must be between 6 and 100 characters.");
       setLoading(false);
       return;
     }

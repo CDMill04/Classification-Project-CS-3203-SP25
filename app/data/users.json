@@ -14,5 +14,22 @@
     "password": "password",
     "role": "",
     "school": ""
+  },
+  {
+    "id": 1745973501971,
+    "name": "Kyle Clouse",
+    "email": "clouse1123@gmail.com",
+    "password": "Kyle1123",
+    "role": "admin",
+    "school": "None"
 
+  },
+  {
+    "id": 1947886762754,
+    "name": "Nhoj Eod",
+    "email": "nhojeod@example.com",
+    "password": "password",
+    "role": "teacher",
+    "school": "OU"
+  }
 ]

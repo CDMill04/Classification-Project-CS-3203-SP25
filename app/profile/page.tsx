@@ -28,10 +28,9 @@ export function Profile() {
   const [isLoginOpen, setLoginOpen] = useState(false);
   const [isSignUpOpen, setSignUpOpen] = useState(false);
   const [isMounted, setIsMounted] = useState(false);
-  const [user, setUser] = useState<{ name: string; email: string } | null>(null);
+  const [user, setUser] = useState<{ name: string; email: string, role?: string, } | null>(null);
 
   const [name, setName] = useState('');
-  const [role, setRole] = useState('Student');
 
   useEffect(() => {
     setIsMounted(true);
@@ -62,7 +61,7 @@ export function Profile() {
   const handleSaveChanges = (e: React.FormEvent<HTMLFormElement>) => {
     e.preventDefault();
     // This saves the changes the user makes in their profile
-    console.log("Saved changes:", { name, role });
+    console.log("Saved changes:", { name });
   };
 
   const handleUpdatePassword = (e: React.FormEvent<HTMLFormElement>) => {
@@ -117,17 +116,15 @@ export function Profile() {
               />
             </div>
             <div className="form-group">
-              <label className="block mb-2 font-medium">Role:</label>
-              <select
-                className="w-full p-2 rounded-lg border"
-                value={role}
-                onChange={(e) => setRole(e.target.value)}
-              >
-                <option>Student</option>
-                <option>Educator</option>
-                <option>Administrator</option>
-              </select>
+            <label className="block mb-2 font-medium">Role:</label>
+            <input
+            type="text"
+            value={user?.role || "None"}
+            disabled
+            className="w-full p-2 rounded-lg border bg-gray-100 text-gray-500 cursor-not-allowed"
+            />
             </div>
+
             <Button type="submit" className="bg-[hsl(var(--primary))] text-white rounded-lg hover:opacity-90">
               Save Changes
             </Button>

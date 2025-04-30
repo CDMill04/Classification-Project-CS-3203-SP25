@@ -11,7 +11,7 @@ import SignUpModal from "@/app/components/modals/SignUpPage";
 import useCurrentUser from "@/app/hooks/useCurrentUser";
 import users from "@/app/data/users.json"; // Assuming you have a JSON file with user data
 
-// File sanitization function for CWE-79: Improper Neutralization of Input During Web Page Generation ('Cross-site Scripting')
+// File sanitization function for CWE-20: Improper Input Validation
 // This function replaces unsafe characters in filenames with underscores and limits the length to 100 characters.
 const sanitizeFilename = (name: string) => {
   const safeName = name
@@ -51,7 +51,8 @@ export function FileUpload() {
   const [error, setError] = useState("");
   const [uploadSuccess, setUploadSuccess] = useState(false);
   const [loading, setLoading] = useState(true);
-  const [isTeacher, setIsTeacher] = useState(true);
+  const [isTeacher, setIsTeacher] = useState(false);
+  const [isAdmin, setIsAdmin] = useState(false);
 
   const [isLoginOpen, setLoginOpen] = useState(false);
   const [isSignUpOpen, setSignUpOpen] = useState(false);
@@ -78,9 +79,17 @@ export function FileUpload() {
   // Fetch uploads when user is ready
   useEffect(() => {
     if (USER_EMAIL) {
-      if (getRoleByEmail(USER_EMAIL) === "Admin") {
+      const role = getRoleByEmail(USER_EMAIL)?.toLowerCase();
+      if (role === "teacher") {
+        setIsTeacher(true);
+        setIsAdmin(false);
+      } else if (role === "admin"){
         setIsTeacher(false);
-      }
+        setIsAdmin(true);
+      } else {
+        setIsTeacher(false);
+        setIsTeacher(false);
+      } 
       console.log("Fetching uploads...");
       fetchUploads();
     }
@@ -118,10 +127,22 @@ export function FileUpload() {
     try {
       const updatedFiles = [...uploadedFiles];
       const fileToUpdate = updatedFiles[index];
-
+  
       fileToUpdate.status = newStatus;
-
+  
+      // Assuming `user.email` holds the email of the user who uploaded the file
+      const fileWithUser = { 
+        ...fileToUpdate, 
+        uploadedBy: user?.email || ""  // Add the `uploadedBy` field here
+      };
+  
       await updateFileStatus(USER_EMAIL, fileToUpdate.filename, newStatus);
+  
+      if (newStatus === "Approved") {
+        await sendApprovalEmail();
+      } else if (newStatus === "Disapproved") {
+        await sendDisapprovalEmail();
+      }
 
       setUploadedFiles(updatedFiles);
       console.log("Status updated successfully:", fileToUpdate);
@@ -130,6 +151,61 @@ export function FileUpload() {
       setError("Failed to update status. Please try again.");
     }
   };
+  
+
+  const sendApprovalEmail = async () => {
+    try {
+      const response = await fetch('/api/send-email', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({
+          userEmail: USER_EMAIL,  // Using USER_EMAIL here
+          subject: 'Your Curriculum Has Been Approved!',
+          text: `Hello, your curriculum Has Been Approved by the Admin. You can now view it in the File Upload Center.`,
+        }),
+      });
+  
+      if (response.ok) {
+        const result = await response.json();
+        console.log('Approval email sent successfully:', result.message);
+      } else {
+        const errorText = await response.text();
+        console.error('Error sending approval email:', errorText);
+      }
+    } catch (error: any) {
+      console.error('Error sending approval email:', error);
+    }
+  };
+
+  const sendDisapprovalEmail = async () => {
+    try {
+      const response = await fetch('/api/send-email', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({
+          userEmail: USER_EMAIL,  // Still using USER_EMAIL
+          subject: 'Your Curriculum Has Been Disapproved',
+          text: `Hello, your curriculum has been disapproved by the Admin. You may review it and re-upload if necessary.`,
+        }),
+      });
+  
+      if (response.ok) {
+        const result = await response.json();
+        console.log('Disapproval email sent successfully:', result.message);
+      } else {
+        const errorText = await response.text();
+        console.error('Error sending disapproval email:', errorText);
+      }
+    } catch (error: any) {
+      console.error('Error sending disapproval email:', error);
+    }
+  };
+  
+  
 
   const handleFileChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     if (e.target.files) {
@@ -196,16 +272,19 @@ export function FileUpload() {
       setUploading(false);
     }
   };
+
   return (
     <Layout>
       <div className="sticky top-0 z-20 flex justify-between items-center p-4 bg-background border-b">
         <h2 className="text-2xl font-bold">File Upload Center</h2>
+        {!user && (
         <Button
           onClick={openLogin}
           className="bg-[hsl(var(--primary))] text-white hover:opacity-90 rounded-lg"
         >
           Log In
         </Button>
+        )}
   </div>
       <div className="p-6 mt-6">
         {loading ? (
@@ -219,18 +298,58 @@ export function FileUpload() {
             Oops! You must be logged in to view your uploads.
           </p>
         </div>
-        ) : !isTeacher ? (
-          <div className = "flex flex-col items-center justify-center text-center px-9 pt-16 h-[calc(100vh-64px)]">
-            <img 
-              src="/sad3.webp"
-              alt="Admin"
-              className="w-64 h-64 mb-6 object-contain"
-            />
-            <p className="text-2xl font-semibold text-muted-foreground">
-              You are logged in as an Admin. Wait for the admin view feature to be implemented.
-            </p>
-          </div>
-        ) : (
+        ) : !isTeacher && isAdmin ? (
+          //ADMIN VIEW
+          <div className="upload-section">
+          <h3>Recent Uploads - Can take up to a minute to show changes</h3>
+          <table className="uploads-table">
+            <thead>
+              <tr>
+                <th>Date</th>
+                <th>Filename</th>
+                <th>Semester</th>
+                <th>Status</th>
+                <th>Actions</th>
+              </tr>
+            </thead>
+            <tbody>
+              {uploadedFiles.map((file, index) => (
+                <tr key={index}>
+                  <td>{file.date}</td>
+                  <td>
+                    <a
+                      href={file.url}
+                      target="_blank"
+                      rel="noopener noreferrer"
+                    >
+                      {file.filename}
+                    </a>
+                  </td>
+                  <td>{file.semester}</td>
+                  <td className={`status-${file.status.toLowerCase()}`}>
+                    {file.status}
+                  </td>
+                  <td>
+                    <button
+                      className="action-link approve"
+                      onClick={() => handleStatusChange(index, "Approved")}
+                    >
+                      Approve
+                    </button>
+                    <button
+                      className="action-link disapprove"
+                      onClick={() => handleStatusChange(index, "Disapproved")}
+                    >
+                      Disapprove
+                    </button>
+                  </td>
+                </tr>
+              ))}
+            </tbody>
+          </table>
+        </div>
+        ) : isTeacher && !isAdmin ? (
+          //TEACHER VIEW
           <>
             <div className="upload-section">
               <h3>Upload New File</h3>
@@ -282,7 +401,6 @@ export function FileUpload() {
                     <th>Filename</th>
                     <th>Semester</th>
                     <th>Status</th>
-                    <th>Actions</th>
                   </tr>
                 </thead>
                 <tbody>
@@ -302,26 +420,24 @@ export function FileUpload() {
                       <td className={`status-${file.status.toLowerCase()}`}>
                         {file.status}
                       </td>
-                      <td>
-                        <button
-                          className="action-link approve"
-                          onClick={() => handleStatusChange(index, "Approved")}
-                        >
-                          Approve
-                        </button>
-                        <button
-                          className="action-link disapprove"
-                          onClick={() => handleStatusChange(index, "Disapproved")}
-                        >
-                          Disapprove
-                        </button>
-                      </td>
                     </tr>
                   ))}
                 </tbody>
               </table>
             </div>
           </>
+      ) : (
+        //UNKNOWN VIEW
+        <div className="flex flex-col items-center justify-center text-center px-9 pt-16 h-[calc(100vh-64px)]">
+        <img 
+          src="/broken_pencil.png"
+          alt="Unknown Role"
+          className="w-64 h-64 mb-6 object-contain"
+        />
+        <p className="text-2xl font-semibold text-muted-foreground">
+          You are logged in with an unrecognized role. Please contact your administrator.
+        </p>
+      </div>
       )}
       <style jsx>{`
         .upload-section {
