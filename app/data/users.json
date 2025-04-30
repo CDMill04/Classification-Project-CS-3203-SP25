@@ -14,5 +14,13 @@
     "password": "password",
     "role": "",
     "school": ""
+  },
+  {
+    "id": 1947886762754,
+    "name": "Nhoj Eod",
+    "email": "nhojeod@example.com",
+    "password": "password",
+    "role": "teacher",
+    "school": "OU"
   }
 ]
