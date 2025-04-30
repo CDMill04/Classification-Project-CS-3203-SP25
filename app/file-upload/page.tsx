@@ -11,7 +11,7 @@ import SignUpModal from "@/app/components/modals/SignUpPage";
 import useCurrentUser from "@/app/hooks/useCurrentUser";
 import users from "@/app/data/users.json"; // Assuming you have a JSON file with user data
 
-// File sanitization function for CWE-79: Improper Neutralization of Input During Web Page Generation ('Cross-site Scripting')
+// File sanitization function for CWE-20: Improper Input Validation
 // This function replaces unsafe characters in filenames with underscores and limits the length to 100 characters.
 const sanitizeFilename = (name: string) => {
   const safeName = name
