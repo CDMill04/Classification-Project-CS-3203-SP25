@@ -23,15 +23,23 @@ function runGuard({
 }: GuardOptions = {}) {
   const ref = document.referrer || null;
 
-  if (!ref && allowEmptyReferrer) return; // ✅ bookmark / direct nav
+  if (!ref && allowEmptyReferrer) return; // bookmark / direct nav
   let refOrigin = "";
   try {
     refOrigin = new URL(ref!).origin;
   } catch {
-    /* malformed referrer – treat as hostile */
+    console.warn("Blocked: Malformed referrer", ref);
+    onBlock({ referrer: ref });
+    return;
   }
-  if (allowList.includes(refOrigin)) return; // ✅ good origin
-  onBlock({ referrer: ref });                // 🚫 stop right there
+
+  if (allowList.includes(refOrigin)) {
+    console.log("Allowed referrer:", refOrigin);
+    return;
+  }
+
+  console.warn("Blocked referrer:", refOrigin);
+  onBlock({ referrer: ref });
 }
 
 /* ───────────── component you import ───────────── */
