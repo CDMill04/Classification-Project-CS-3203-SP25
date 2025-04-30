@@ -21,6 +21,8 @@ function runGuard({
     navigator.sendBeacon?.("/api/bad-referrer", JSON.stringify({ referrer }));
   },
 }: GuardOptions = {}) {
+  console.log("Current origin is:", location.origin);
+
   const ref = document.referrer || null;
 
   if (!ref && allowEmptyReferrer) return; // bookmark / direct nav
