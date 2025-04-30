@@ -7,6 +7,7 @@ import useCurrentUser from "@/app/hooks/useCurrentUser";
 import LoginModal from "@/app/components/modals/loginPage";
 import SignUpModal from "@/app/components/modals/SignUpPage";
 import { getAllSchools, getAllUsers, createSchool, joinSchool, updateUser, promoteToAdmin, getLessonPlansForSchool } from "./actions";
+import Notification from "@/app/components/Notification";
 
 
 export default function SchoolManagement() {
@@ -23,7 +24,7 @@ export default function SchoolManagement() {
   const [isSignUpOpen, setSignUpOpen] = useState(false);
   const [logoutMessage, setLogoutMessage] = useState(false);
 
-  
+  const [notification, setNotification] = useState<string | null>(null);
   
     const openLogin = () => {
       setLoginOpen(true);
@@ -68,6 +69,7 @@ export default function SchoolManagement() {
     setMyRole("admin");
     setMySchool(schoolName);
     setView("admin");
+    setNotification("School Successfully Created!");
   };
 
   const handleJoin = async () => {
@@ -77,6 +79,7 @@ export default function SchoolManagement() {
     setMyRole("teacher");
     setMySchool(selectedSchool);
     setView("teacher");
+    setNotification("Successfully joined " + selectedSchool + "!");
   };
 
   const loadSchools = async () => {
@@ -220,6 +223,10 @@ export default function SchoolManagement() {
           </div>
         )}
       </div>
+
+      {/* Show Notification */}
+      {notification && <Notification message={notification} onClose={() => setNotification(null)} />}
+      
       {/* Login and Sign Up Modals */}
       {isMounted && (
         <>

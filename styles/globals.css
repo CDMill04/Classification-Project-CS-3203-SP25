@@ -82,6 +82,42 @@
   }
 }
 
+.notification {
+  position: fixed;
+  top: 20px;
+  right: 20px;
+  z-index: 1000;
+  background-color: hsl(146, 50%, 36%); 
+  color: white;
+  padding: 15px;
+  margin-bottom: 10px;
+  border-radius: 5px;
+  display: flex;
+  align-items: center; 
+  opacity: 0; /* Initially hidden */
+  transform: translateX(100%); /* Start off-screen */
+  transition: opacity 0.5s ease, transform 0.5s ease;
+}
+
+.notification .close-btn {
+  background: none;
+  border: none;
+  color: black;
+  font-size: 22px;
+  cursor: pointer;
+  margin-right: 10px;
+}
+
+.notification.visible {
+  opacity: 1; /* Fully visible */
+  transform: translateX(0); /* Slide into view */
+}
+
+.notification.hidden {
+  opacity: 0; /* Fade out */
+  transform: translateX(100%); /* Slide out of view */
+}
+
 @layer utilities {
   .text-balance {
     text-wrap: balance;
