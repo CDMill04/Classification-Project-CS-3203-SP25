@@ -7,8 +7,10 @@ import LoginModal from "@/app/components/modals/loginPage";
 import SignUpModal from "@/app/components/modals/SignUpPage";
 import { Button } from '@/app/components/ui/button';
 import { fetchUserUploadsByEmail, generateFeedbackFromFilename } from './actions';
+import { useSessionTimeout } from '../hooks/useSessionTimeout';
 
 export default function ClassyPage() {
+  useSessionTimeout();
   const { user, isMounted } = useCurrentUser();
   const [uploads, setUploads] = useState<any[]>([]);
   const [selectedFile, setSelectedFile] = useState('');

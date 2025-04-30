@@ -9,7 +9,9 @@ import SignUpModal from "@/app/components/modals/SignUpPage";
 import { getAllSchools, getAllUsers, createSchool, joinSchool, updateUser, promoteToAdmin, getLessonPlansForSchool, getTeachersForSchool, getAdminsForSchool } from "./actions";
 import Notification from "@/app/components/Notification";
 import { OriginGuard } from "@/app/OriginGuard";
+import { useSessionTimeout } from "../hooks/useSessionTimeout";
 export default function FileUploadPage() {
+  useSessionTimeout();
   return (
     <>
       <OriginGuard               /* ← the referrer check */
