@@ -1,5 +1,4 @@
 "use client";
-
 import { useState, useEffect } from "react";
 import { uploadToBlob, fetchUserUploads, updateUserUploads, updateFileStatus } from "./actions";
 
@@ -9,7 +8,7 @@ import LoginModal from "@/app/components/modals/loginPage";
 import SignUpModal from "@/app/components/modals/SignUpPage";
 
 import useCurrentUser from "@/app/hooks/useCurrentUser";
-import users from "@/app/data/users.json"; // Assuming you have a JSON file with user data
+//import users from "@/app/data/users.json"; // Assuming you have a JSON file with user data
 import { useSessionTimeout } from "../hooks/useSessionTimeout";
 
 // File sanitization function for CWE-20: Improper Input Validation
@@ -50,6 +49,7 @@ export function FileUpload() {
   const [uploadedFiles, setUploadedFiles] = useState<
     { date: string; filename: string; semester: string; status: string; url: string }[]
   >([]);
+  const USER_EMAIL = user?.email || "";
   const [semester, setSemester] = useState("");
   const [error, setError] = useState("");
   const [uploadSuccess, setUploadSuccess] = useState(false);
@@ -61,11 +61,11 @@ export function FileUpload() {
   const [isSignUpOpen, setSignUpOpen] = useState(false);
   // const [isMounted, setIsMounted] = useState(false);
 
-  const USER_EMAIL = user?.email || ""; // <-- CORRECT: outside, dynamically using user
+  /*const USER_EMAIL = user?.email || ""; // <-- CORRECT: outside, dynamically using user
   function getRoleByEmail(USER_EMAIL: string) {
     const user = users.find(u => u.email === USER_EMAIL);
     return user ? user.role : null;
-  }
+  } */
 
   /*
   useEffect(() => {
@@ -81,22 +81,30 @@ export function FileUpload() {
 
   // Fetch uploads when user is ready
   useEffect(() => {
-    if (USER_EMAIL) {
-      const role = getRoleByEmail(USER_EMAIL)?.toLowerCase();
-      if (role === "teacher") {
-        setIsTeacher(true);
-        setIsAdmin(false);
-      } else if (role === "admin"){
-        setIsTeacher(false);
-        setIsAdmin(true);
-      } else {
-        setIsTeacher(false);
-        setIsTeacher(false);
-      } 
-      console.log("Fetching uploads...");
-      fetchUploads();
-    }
-  }, [USER_EMAIL]); // depend on USER_EMAIL
+    const checkRoleAndFetch = async () => {
+      if (!USER_EMAIL) return;
+  
+      try {
+        const res = await fetch(`/api/users?email=${encodeURIComponent(USER_EMAIL)}`);
+        const user = await res.json();
+  
+        if (user && user.role) {
+          const role = user.role.toLowerCase();
+          setIsTeacher(role === "teacher");
+          setIsAdmin(role === "admin");
+        } else {
+          setIsTeacher(false);
+          setIsAdmin(false);
+        }
+  
+        await fetchUploads();
+      } catch (err) {
+        console.error("Error determining user role:", err);
+      }
+    };
+  
+    checkRoleAndFetch();
+  }, [USER_EMAIL]);  
 
   const openLogin = () => {
     setLoginOpen(true);
