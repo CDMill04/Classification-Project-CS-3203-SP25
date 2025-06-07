@@ -1,14 +1,25 @@
+import clientPromise from '@/lib/mongodb';
 import { NextResponse } from 'next/server';
 import { promises as fs } from 'fs';
 import path from 'path';
 
 const filePath = path.join(process.cwd(), 'app/data/users.json'); // Set file path
 
-// GET acquires all users from users.json
-export async function GET() {
-  const file = await fs.readFile(filePath, 'utf-8');
-  const users = JSON.parse(file);
+// GET used to acquire all users from users.json
+// Now updated for MongoDB
+export async function GET(req: Request) {
+  const client = await clientPromise;
+  const db = client.db('classification');
+  const url = new URL(req.url);
+  const email = url.searchParams.get('email');
 
+  if (email) {
+    const user = await db.collection('users').findOne({ email });
+    if (!user) return NextResponse.json({ error: "User not found" }, { status: 404 });
+    return NextResponse.json(user);
+  }
+
+  const users = await db.collection('users').find().toArray();
   return NextResponse.json(users);
 }
 
@@ -41,31 +52,28 @@ export async function POST(req: Request) {
     return NextResponse.json({ error: "Password must be between 6 and 100 characters." }, { status: 400 });
   }
 
-  // Set defaults for role and school if missing. I have these implemented in the signhups, so these arent needed
-  // They are just extra
-  const userRole = role || "None";
-  const userSchool = school || "None";
+  // User creation, now updated for MongoDB
 
-  // Continue normal user creation and field creation.
-  const file = await fs.readFile(filePath, 'utf-8');
-  const users = JSON.parse(file);
+  const client = await clientPromise;
+  const db = client.db('classification');
+  const usersCollection = db.collection('users');
 
-  const existingUser = users.find((user: any) => user.email === email);
+  const existingUser = await usersCollection.findOne({ email }); // Make sure the user is not an existing one upon signup
+
   if (existingUser) {
     return NextResponse.json({ error: "User already exists" }, { status: 400 });
   }
 
   const newUser = {
-    id: Date.now(),
     name,
     email,
     password,
-    role: userRole,
-    school: userSchool,
+    role: role || "None",
+    school: school || "None",
+    createdAt: new Date(),
   };
 
-  users.push(newUser);
-  await fs.writeFile(filePath, JSON.stringify(users, null, 2));
+  await usersCollection.insertOne(newUser);
 
   return NextResponse.json(newUser, { status: 201 });
 }
